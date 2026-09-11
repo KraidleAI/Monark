@@ -37,8 +37,8 @@
     },
     {
       "path": "apps/harness/src/http.ts",
-      "sha256": "d3e93988e91881d1c88028d47ceea9c6bdd7a83a8e8bd2e212d69ccbba8a4874",
-      "bytes": 4845
+      "sha256": "0e46c10ba0b282b285475d892989b76dfb6057f4f0c129ceebf9dc02b156d894",
+      "bytes": 5744
     },
     {
       "path": "apps/harness/src/openapi.ts",
@@ -107,8 +107,8 @@
     },
     {
       "path": "apps/harness/test/http.test.ts",
-      "sha256": "653a30d3205c5d34134d4c6b73b4ce4a882a493fb6636a1590c3a39189373892",
-      "bytes": 15155
+      "sha256": "bd041343f6a3bcd6f7ffdde00f8af0c56217a06a1907e8dd25776312d984fae4",
+      "bytes": 16286
     },
     {
       "path": "apps/harness/test/openapi.test.ts",
