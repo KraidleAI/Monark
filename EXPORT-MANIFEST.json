@@ -67,8 +67,8 @@
     },
     {
       "path": "apps/harness/src/tools/calibrate.ts",
-      "sha256": "fb2bf9df86820ef4ac8cbe48c891f86faccb08fab3c79282edda9ad13a91d806",
-      "bytes": 8950
+      "sha256": "060466bb4bb258a12bfa34e41481bf77282c429dc603a7cb294b8edf417cd2e9",
+      "bytes": 10098
     },
     {
       "path": "apps/harness/src/tools/cascade.ts",
@@ -77,13 +77,13 @@
     },
     {
       "path": "apps/harness/src/tools/gate.ts",
-      "sha256": "ab7f31517c5c014047e339bb76b5659aade5b7a36c59bb55571c7030c88cfece",
-      "bytes": 20241
+      "sha256": "5ec2a95e8c9fcae3b483b4a42ab20a54e6798f11f262cabab38e5dd6fb266e39",
+      "bytes": 21617
     },
     {
       "path": "apps/harness/src/tools/registry.ts",
-      "sha256": "0a88d3fcb41e073c2ab4d5ffe6a4e9eb976d71c3d18e5cc8cb056b1ece3bb966",
-      "bytes": 7719
+      "sha256": "a5e1dcedd09ab04ad132348e217986f29164c49e1804d968390df2181d0adcec",
+      "bytes": 8095
     },
     {
       "path": "apps/harness/test/attest.test.ts",
@@ -92,8 +92,8 @@
     },
     {
       "path": "apps/harness/test/calibrate.test.ts",
-      "sha256": "609bfc2c19994441af2b157bf61ad399ad0428c0073a4b669bd847946bc73150",
-      "bytes": 15197
+      "sha256": "14bc4eba5e0e533232c0f80ad6e36a8c47373a509746680d6e15c674be5be779",
+      "bytes": 17433
     },
     {
       "path": "apps/harness/test/cascade.test.ts",
@@ -102,13 +102,13 @@
     },
     {
       "path": "apps/harness/test/gate.test.ts",
-      "sha256": "46d9611e7249686f5dd5c85f94ddcb6142a66eb885f8d2d506457b99fcab042d",
-      "bytes": 20015
+      "sha256": "c2d9441ab370db8130870fe32bd0faf20445e09b5e4c1b5e12b0b454a03658bb",
+      "bytes": 20781
     },
     {
       "path": "apps/harness/test/http.test.ts",
-      "sha256": "bd041343f6a3bcd6f7ffdde00f8af0c56217a06a1907e8dd25776312d984fae4",
-      "bytes": 16286
+      "sha256": "3b9ad3c65c2b2331380bc41d66915bd0a4cb73c0d01be6d8ea22fbd29042e726",
+      "bytes": 16918
     },
     {
       "path": "apps/harness/test/openapi.test.ts",
@@ -527,13 +527,13 @@
     },
     {
       "path": "fixtures/PROVENANCE-byo-demo.md",
-      "sha256": "c67ca5b820559fc3c79ed78314b4f437c88a1d8c803404cea1ada4088c529936",
-      "bytes": 5522
+      "sha256": "a2a19d882dc4d8af554682879e6a4f9f16cb76ba704d2905287973ca4079a4ec",
+      "bytes": 5739
     },
     {
       "path": "fixtures/PROVENANCE-h5-e2e-trace.md",
-      "sha256": "f970f30c4914353535653eec3437a848c08e84612d38e1f8a92131c70b82db23",
-      "bytes": 4937
+      "sha256": "e0ea8285a6c41cbd2beabf9f958f8fa38b7aaf9bef639e6bfe2ed7f0985a29fb",
+      "bytes": 5025
     },
     {
       "path": "fixtures/PROVENANCE-s3-binance.md",
@@ -542,8 +542,8 @@
     },
     {
       "path": "fixtures/byo-demo-trace.json",
-      "sha256": "79b54471bb2e4d92f574e6456f3f4d548f7d73f187ea2528cbc54ca6f49286d4",
-      "bytes": 9575
+      "sha256": "60f348689cc75db4978c04ec0e4a232c90fcf277720785fc6fabf27ad20c6ce3",
+      "bytes": 9735
     },
     {
       "path": "fixtures/figures-sourced.json",
@@ -552,8 +552,8 @@
     },
     {
       "path": "fixtures/h5-e2e-trace.json",
-      "sha256": "711879f0d6eca93f8032c670aac40502290e433e8f3fe5768bd62790b7940f4e",
-      "bytes": 15529
+      "sha256": "4481384a003d1a4af00e06d3dc997f43777421cc7471d04a40745b87b79e9293",
+      "bytes": 15731
     },
     {
       "path": "fixtures/manifest.json",
