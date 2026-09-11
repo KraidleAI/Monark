@@ -12,8 +12,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "9b88b53d91e0596ad3252b59e0dafd51df4c8347a645de2391978261e6994b4c",
-      "bytes": 7609
+      "sha256": "98cecfa36feaf2cb15d0ef6e8ec39c7cdba93d365ce39228995c08ebad70b8e2",
+      "bytes": 7236
     },
     {
       "path": "apps/harness/README.md",
@@ -172,8 +172,8 @@
     },
     {
       "path": "apps/site/app/integrators/page.tsx",
-      "sha256": "897647e36b1b8498ae7238ef5220fe32f6e17fbfbc98d24386d50a64ffa1ed41",
-      "bytes": 5596
+      "sha256": "edfe43f0a0db0cc59015f6db1dfa22aeb65b9ba6e2da4321bd284715b72cec46",
+      "bytes": 8146
     },
     {
       "path": "apps/site/app/layout.tsx",
@@ -197,8 +197,8 @@
     },
     {
       "path": "apps/site/app/token/page.tsx",
-      "sha256": "bf6a8300f71993872dde564b39beb09aed88657b2dcf6cb6a0de9d45e2a74187",
-      "bytes": 6692
+      "sha256": "047ed3f5dee09394c63d4b0bbb92e9825c4f7085b2750af66831bae75e1ecd69",
+      "bytes": 7728
     },
     {
       "path": "apps/site/app/writing/page.tsx",
@@ -247,8 +247,8 @@
     },
     {
       "path": "apps/site/components/hikae-panel.tsx",
-      "sha256": "28bc1d0d9b5053a438b7778b1a897af0a138990b738e812c648e09d1c3756e6d",
-      "bytes": 4740
+      "sha256": "8af310e4f26114876aa604e903f9f24cab3d812d02b81f701e51313e449eb446",
+      "bytes": 4836
     },
     {
       "path": "apps/site/components/marks/genkan-mark.tsx",
@@ -327,13 +327,13 @@
     },
     {
       "path": "apps/site/components/shogen-panel.tsx",
-      "sha256": "817d67f4ce6149df68103b6a35565676f8b50afec65bed985346ed4d54d5a564",
-      "bytes": 4084
+      "sha256": "bf4b4cb276b417806c58fb644029394c5f1065da7e3a6b1e6728b0bc826b1020",
+      "bytes": 4182
     },
     {
       "path": "apps/site/components/site-footer.tsx",
-      "sha256": "2ebd23a5cff15ffdd5d0a8ce3979592ed079095567439b5bca72af83f8d4ebfe",
-      "bytes": 2819
+      "sha256": "c7ead52ccd870bde7960fd3e892adbea54b1a586e78d1ac11184ce6fc5807596",
+      "bytes": 2943
     },
     {
       "path": "apps/site/components/site-header.tsx",
@@ -362,8 +362,8 @@
     },
     {
       "path": "apps/site/components/ukemi-panel.tsx",
-      "sha256": "3d2f12e6693d40a91950447d928731a1232a3d38c044f2240873ff90d0a64a77",
-      "bytes": 4578
+      "sha256": "52b00c0eacc91d79352d6c23fe55df7693e3f6ea7b071b22a557f30a7c2f8631",
+      "bytes": 4677
     },
     {
       "path": "apps/site/components/upcoming-panel.tsx",
