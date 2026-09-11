@@ -12,8 +12,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "98cecfa36feaf2cb15d0ef6e8ec39c7cdba93d365ce39228995c08ebad70b8e2",
-      "bytes": 7236
+      "sha256": "2b660017857bdba0b68bb2f3e7f4c1ac68d26aa9b1633d8afb85f485a7b1faec",
+      "bytes": 7108
     },
     {
       "path": "apps/harness/README.md",
@@ -42,8 +42,8 @@
     },
     {
       "path": "apps/harness/src/schema-projection.ts",
-      "sha256": "7dde62d43b1350ca73bd69a773dd461094e9fc178aa462f120608587f3a37276",
-      "bytes": 17472
+      "sha256": "2060def117552c062d80d6efaa8c76706587bdf5a4fe930d3fe1b48c7fd8d924",
+      "bytes": 17470
     },
     {
       "path": "apps/harness/src/server.ts",
@@ -67,8 +67,8 @@
     },
     {
       "path": "apps/harness/src/tools/cascade.ts",
-      "sha256": "e705c4db5f80ef8e02d4f9d9d6db0cf0d9630ac49476076194c5f05ee762c5ce",
-      "bytes": 12194
+      "sha256": "2696aef8f4395ae6bfec91ca8831825d076ee9444107ba0a3e5891a3a2578863",
+      "bytes": 12181
     },
     {
       "path": "apps/harness/src/tools/gate.ts",
@@ -92,8 +92,8 @@
     },
     {
       "path": "apps/harness/test/cascade.test.ts",
-      "sha256": "2db6121acc7ff2d74de65808171e66bcf61f17ff338ab0f5f2e5b0e0785f03fd",
-      "bytes": 17423
+      "sha256": "ba332e53a1d41db654aa39f93af2ec359e3eac4cad99e095a1a8c1ec1949cfcc",
+      "bytes": 17401
     },
     {
       "path": "apps/harness/test/gate.test.ts",
@@ -117,8 +117,8 @@
     },
     {
       "path": "apps/harness/test/schema.test.ts",
-      "sha256": "7f17ac3d516513f373d8213338663e349d7ba81e538769ced0435688d7ff92d1",
-      "bytes": 6092
+      "sha256": "1ddd0fc6ac08a0a38912b5d72c29fa4773eb9763599f4d98122e47d8d1a5d92a",
+      "bytes": 6083
     },
     {
       "path": "apps/harness/test/server.test.ts",
@@ -172,8 +172,8 @@
     },
     {
       "path": "apps/site/app/integrators/page.tsx",
-      "sha256": "edfe43f0a0db0cc59015f6db1dfa22aeb65b9ba6e2da4321bd284715b72cec46",
-      "bytes": 8146
+      "sha256": "d34abb7759882ecd2d9f6a1df44d293447c038b519d660148c5580d107259a5c",
+      "bytes": 9465
     },
     {
       "path": "apps/site/app/layout.tsx",
@@ -192,8 +192,8 @@
     },
     {
       "path": "apps/site/app/roadmap/page.tsx",
-      "sha256": "708fb556be8efe8b83abb273c5facc81166def2f92070a22f22d7da3ad14a4ea",
-      "bytes": 9357
+      "sha256": "dfffa0fa2dae012133e599ed027ed054fc289da7318ba828646c8695f22c5bd6",
+      "bytes": 9378
     },
     {
       "path": "apps/site/app/token/page.tsx",
@@ -467,13 +467,13 @@
     },
     {
       "path": "enforcement/lint-model-pinning.sh",
-      "sha256": "983ba1529d4e0a6ffb9d478f225c4d68539d18768fc78d6cc325ec95a3177365",
-      "bytes": 8230
+      "sha256": "d0c6ca901e0e83606a34502529deab0f5a94adfb2ef7ffa31e71699e6c59cae7",
+      "bytes": 8239
     },
     {
       "path": "eslint.config.mjs",
-      "sha256": "2d6b630ecc331c90d2cb02456f4077fe1c989132bae99dcbd20e4c180b9c077d",
-      "bytes": 5233
+      "sha256": "1a5319d9677c2da3faf1db63e8e8643b1e012638c12002894f8bc2cf8cba14a9",
+      "bytes": 5223
     },
     {
       "path": "fixtures/01-commit-up.gate-decision.json",
@@ -522,13 +522,13 @@
     },
     {
       "path": "fixtures/PROVENANCE-byo-demo.md",
-      "sha256": "442a8e0aca59a218199ba97c9536cc732067c58231e66195f0d3274cad901699",
-      "bytes": 5763
+      "sha256": "40dc21887e2bcd8f6772c5d7f8dcfb4ab02012772bbee78d718bdc7b40a262b1",
+      "bytes": 5522
     },
     {
       "path": "fixtures/PROVENANCE-h5-e2e-trace.md",
-      "sha256": "f6a66c5b2ffb57aae0aadaafbbc498d6910702c13624bc1109106192b5dd11ab",
-      "bytes": 6980
+      "sha256": "658bc647ce7ee9b5f2987b0310742120019b9a6d6b7a47447d49599e2c97bef0",
+      "bytes": 4937
     },
     {
       "path": "fixtures/PROVENANCE-s3-binance.md",
@@ -537,8 +537,8 @@
     },
     {
       "path": "fixtures/byo-demo-trace.json",
-      "sha256": "613e345b305a5f38f1e284ebecbbc8a2755067a54b20a68d85640788a0c4c4c5",
-      "bytes": 9759
+      "sha256": "3f987994900bedb47f27c819f3ff4e780883a030016916a2e6d07abda5e02697",
+      "bytes": 9590
     },
     {
       "path": "fixtures/figures-sourced.json",
@@ -547,8 +547,8 @@
     },
     {
       "path": "fixtures/h5-e2e-trace.json",
-      "sha256": "711536850b4a84b3d635b5f0bcd870a6d316b08e8142147a0cde999266e6618e",
-      "bytes": 15647
+      "sha256": "7fc4b22ee7d621ab3dcbe6ce3e606b71bacf30a34f903d52f796fdedf5a4d90e",
+      "bytes": 15538
     },
     {
       "path": "fixtures/manifest.json",
@@ -907,13 +907,13 @@
     },
     {
       "path": "packages/ukemi/test/clearing-rv.test.ts",
-      "sha256": "7b2d59c38c60fb4c09e99150036cd69ff6f98d3c3d2341bdbb93d11a30995956",
-      "bytes": 4469
+      "sha256": "19d3120b035fadd119dff4da649e93c638ce9cdf85905e69257929c6b785aae2",
+      "bytes": 4462
     },
     {
       "path": "packages/ukemi/test/clearing.test.ts",
-      "sha256": "39190272355e384665f850496163207709d939b41d45697f482fc0bfd7359293",
-      "bytes": 7736
+      "sha256": "7f579a887beafbc520c7a98395ab264997b3b8d7285744a9c6d37dfed4ff0321",
+      "bytes": 7729
     },
     {
       "path": "packages/ukemi/test/fixtures.ts",
@@ -1012,8 +1012,8 @@
     },
     {
       "path": "scripts/lint-ratchet.mjs",
-      "sha256": "787bd8a044ddf03c4743d6b9283cd77afdb03438833c276afaee433a143afba3",
-      "bytes": 4111
+      "sha256": "4427c2eb98cd46f9991b5aaa3b5bfad6585ec84469fa97b46f8549e4d6ef82f8",
+      "bytes": 4101
     },
     {
       "path": "skills/monark/DEMO.md",
@@ -1042,8 +1042,8 @@
     },
     {
       "path": "vocab-banned.json",
-      "sha256": "33a1891ebbbb5550f7a88d6a2477ec27f15d0f7b7ac31c727c9a95b516788b6a",
-      "bytes": 10664
+      "sha256": "76148fb6bd9374d23014cb7f38e1c01b07f6b1d07f9db6f078205a2064833dbc",
+      "bytes": 10626
     }
   ],
   "excluded_tests": [
