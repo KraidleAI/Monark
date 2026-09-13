@@ -1,5 +1,9 @@
 # MONARK
 
+**Mint (Solana):** [`FYZcYCHSp8FzNba1UtDZydKKGosmxVNpFBiVuia38AhT`](https://solscan.io/token/FYZcYCHSp8FzNba1UtDZydKKGosmxVNpFBiVuia38AhT)
+
+`$MONARK` is `B_t`, a **depletable authorization budget**. Each `commit` spends it. `defer` and `abstain` do not. It is **not a yield, not a stake, not an oracle** — it is the fleet's right-to-act, metered. A budget sold as inventory is not a budget. The token is how the gate says yes, and how it stops saying yes when the region cannot cover.
+
 **MONARK is a company of agent-products for DeFi and inference, built on one backbone: a
 coverage-controlled decision gate that emits `commit | defer | abstain` and a depletable
 authorization budget (`B_t`) — never a probability of being right.**
@@ -59,6 +63,8 @@ Four contracts, frozen (source of truth: `schemas/*.json`, language-neutral):
 | `GateDecision` | Hikae L3 | `commit \| defer \| abstain` + `remaining_budget` = `B_t`, the depletable conformal authorization capacity that attaches to MONARK (never a return). |
 
 ## The token
+
+Mint (Solana): `FYZcYCHSp8FzNba1UtDZydKKGosmxVNpFBiVuia38AhT` (`out/mint.txt`).
 
 `MONARK` carries `B_t`, a **depletable authorization budget**: each `commit` spends it; `defer` and
 `abstain` do not. It is **not a yield, not a stake, not an oracle** — it is the fleet's right-to-act,
@@ -122,4 +128,5 @@ packages/atelier    local demo surface (not a shipped product)
 apps/site           public vitrine — foundation only; rich pages come later
 docs/adr            ADR-M001..M004 (phases 0-2, infrastructure), ADR-CERT-MONARK (token)
 .github/workflows   CI (5 blocking jobs)
+out/mint.txt        Solana mint for $MONARK
 ```
