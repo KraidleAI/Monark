@@ -17,8 +17,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "6971e0d49999314b448cfaf41092a9637ecaebe53b69078100187ec6bee00640",
-      "bytes": 7847
+      "sha256": "676fd060a8a007db651c6fddfd90ab9c0d4d3c439c55147beb086c39e3fabc90",
+      "bytes": 7907
     },
     {
       "path": "apps/harness/README.md",
@@ -586,6 +586,11 @@
       "bytes": 336
     },
     {
+      "path": "out/banner.jpg",
+      "sha256": "95a8234af7ca0fab0f54caca5f32500ef7654174016f8fb64d5d2fa245f8fc9d",
+      "bytes": 123758
+    },
+    {
       "path": "out/logo.png",
       "sha256": "d339dc05717432223bd2394046c5ba3e544ddd2261d3de58d419b7294ffdcf06",
       "bytes": 29212
@@ -1002,8 +1007,8 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "947f5539125e575cf71b06e6521073e2c8c43bc0d69424eba0c762d272d637e8",
-      "bytes": 27052
+      "sha256": "b04d872431a428202228297a8e748f088f933e1a974e5ca689a90a77654641d9",
+      "bytes": 27227
     },
     {
       "path": "scripts/grep-forbidden.d.mts",
