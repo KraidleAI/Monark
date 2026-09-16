@@ -21,7 +21,7 @@ import { readFileSync, readdirSync, statSync, existsSync, mkdirSync, copyFileSyn
 import { join, dirname, resolve, basename } from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { loadExempt, scanFile, isFileFrench, classifyScope, scannable, SCOPES } from "./lang-gate.mjs";
+import { loadExempt, scanFile, isFileFrench, classifyScope, scannable, pathExempt, SCOPES } from "./lang-gate.mjs";
 
 const SCRIPT_DIR = fileURLToPath(new URL(".", import.meta.url));
 export const REPO_ROOT = resolve(SCRIPT_DIR, "..");
@@ -64,6 +64,12 @@ export const WHITELIST_FILES = [
   // translated later.
   "packages/atelier/index.html", "packages/atelier/main.js",
   "packages/atelier/style.css", "packages/atelier/serve.js",
+  // Community-facing public assets at stable raw URLs (ADR-M004 D7 — "adding a name = this ADR line").
+  // out/mint.txt is the token contract address the community links to (documented since the initial
+  // publish); out/logo.png is the published logo. They pre-exist on the mirror; whitelisting them makes the
+  // private repo their single source of truth so a full-replace sync PRESERVES them instead of deleting them
+  // (community request: never drop the CA). Binary/plain — not language-scanned; pinned by test/token-ca-pinned.
+  "out/mint.txt", "out/logo.png",
 ];
 
 // ADR-M004 D7 bis R2(a): every fixed whitelist entry (dir or file) MUST exist under the export root or
@@ -231,7 +237,7 @@ export function collectFiles(root) {
   // is a REPORTED, NON-FATAL exclusion and MUST stay AFTER it: were the French rule first, a French
   // governance file slipped into the whitelist (finding MINE-B) would be SILENTLY dropped by the
   // language rule instead of triggering the hard blacklist failure. Test 42(g) / mutant M6 proves it.
-  const { maskers } = loadExempt(root);
+  const { maskers, pathMatchers } = loadExempt(root);
   const structuralViolations = [];
   const frenchMd = [];
   const excludedTests = [];
@@ -248,7 +254,7 @@ export function collectFiles(root) {
   excludedTests.sort((a, b) => (a < b ? -1 : 1));
   dormantAppTests.sort((a, b) => (a < b ? -1 : 1));
   missingRequired.sort((a, b) => (a < b ? -1 : 1));
-  return { kept, structuralViolations, frenchMd, excludedTests, dormantAppTests, missingRequired, maskers };
+  return { kept, structuralViolations, frenchMd, excludedTests, dormantAppTests, missingRequired, maskers, pathMatchers };
 }
 
 function sha256(abs) {
@@ -370,7 +376,7 @@ function doExport(root, outDir) {
 
 // ---- CHECK mode ---------------------------------------------------------------------------
 function doCheck(root, selectedScopes) {
-  const { kept, structuralViolations, frenchMd, missingRequired, maskers } = collectFiles(root);
+  const { kept, structuralViolations, frenchMd, missingRequired, maskers, pathMatchers } = collectFiles(root);
   let bad = false;
   if (structuralViolations.length) {
     console.error("check FAILED — the whitelist would include forbidden path(s) (blacklist, D7):");
@@ -391,6 +397,7 @@ function doCheck(root, selectedScopes) {
   const printed = [];
   for (const f of kept) {
     if (!scannable(f.rel)) continue;
+    if (pathExempt(f.rel, pathMatchers)) continue; // whole-file path exemption (lang-exempt.json "paths") — mirror lang-gate scanFileList; the s3-binance Shogen fixtures are verbatim third-party evidence (investor ruling 2026-09-16)
     const hits = scanFile(f.abs, maskers);
     if (!hits.length) continue;
     const scope = classifyScope(f.rel);

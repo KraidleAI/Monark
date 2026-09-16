@@ -7,8 +7,8 @@
     },
     {
       "path": "CONTRIBUTING.md",
-      "sha256": "13305469d1b37a8fbeb78d2c4a181a2170f9c707cbf2ad31d9453fadbcbe058d",
-      "bytes": 2139
+      "sha256": "18416e354f57a07db9910556bebc568fd0304ed051ad92f4fc4651b75f4c8e5f",
+      "bytes": 3777
     },
     {
       "path": "LICENSE",
@@ -17,8 +17,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "71bef86b82003a96f728b413ed95041a5ac5c24aad174b775b5ce8c64757bb20",
-      "bytes": 7099
+      "sha256": "6971e0d49999314b448cfaf41092a9637ecaebe53b69078100187ec6bee00640",
+      "bytes": 7847
     },
     {
       "path": "apps/harness/README.md",
@@ -586,6 +586,16 @@
       "bytes": 336
     },
     {
+      "path": "out/logo.png",
+      "sha256": "d339dc05717432223bd2394046c5ba3e544ddd2261d3de58d419b7294ffdcf06",
+      "bytes": 29212
+    },
+    {
+      "path": "out/mint.txt",
+      "sha256": "9b4e275adfbb7054c750647a3393d8c19c247242c806616819c391a29f1bdecb",
+      "bytes": 45
+    },
+    {
       "path": "package-lock.json",
       "sha256": "75d36005b37b7e312ebec971e565c5ac15a2376482800defa0689b260926b0ed",
       "bytes": 180086
@@ -992,8 +1002,8 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "d824bb6088c2f4f4430615678e78e8d59b7c521861b6464f95bc15e02b4ef99f",
-      "bytes": 26186
+      "sha256": "947f5539125e575cf71b06e6521073e2c8c43bc0d69424eba0c762d272d637e8",
+      "bytes": 27052
     },
     {
       "path": "scripts/grep-forbidden.d.mts",
