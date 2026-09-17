@@ -13,36 +13,52 @@ import {
 } from "../src/index.ts";
 import {
   validAttestedPrice,
+  validAttestedFlow,
   validPrediction,
   validVerdictSet,
   validVerdictInterval,
   validGateDecision,
 } from "./fixtures.ts";
+import { serializeAttestedFlow } from "../src/index.ts";
 
 const schemasDir = new URL("../../../schemas/", import.meta.url);
-// deno-lint-ignore no-explicit-any
-function loadSchema(name: string): any {
-  return JSON.parse(readFileSync(new URL(name, schemasDir), "utf8"));
+/** Minimal structural view of a JSON-Schema node — only the shape these drift tests read (plus
+ *  `forbidden_keys`, since loadSchema also parses schemas/forbidden-keys.json). Recursive. */
+type SchemaNode = {
+  properties?: Record<string, SchemaNode>;
+  items?: SchemaNode;
+  oneOf?: SchemaNode[];
+  forbidden_keys?: readonly string[];
+};
+function loadSchema(name: string): SchemaNode {
+  return JSON.parse(readFileSync(new URL(name, schemasDir), "utf8")) as SchemaNode;
 }
-// deno-lint-ignore no-explicit-any
-function propKeys(node: any): string[] {
+function propKeys(node: SchemaNode): string[] {
   return Object.keys(node.properties ?? {});
 }
 
 test("schema properties are IN SYNC with the TS allowed-key sets (no drift)", () => {
   const ap = loadSchema("attested-price.schema.json");
   assert.deepEqual(propKeys(ap).sort(), [...ALLOWED_KEYS.attestedPrice].sort());
-  assert.deepEqual(propKeys(ap.properties.attestor.items).sort(), [...ALLOWED_KEYS.attestor].sort());
-  assert.deepEqual(propKeys(ap.properties.utterance).sort(), [...ALLOWED_KEYS.utterance].sort());
-  assert.deepEqual(propKeys(ap.properties.observed_at).sort(), [...ALLOWED_KEYS.observedAt].sort());
+  assert.deepEqual(propKeys(ap.properties!.attestor!.items!).sort(), [...ALLOWED_KEYS.attestor].sort());
+  assert.deepEqual(propKeys(ap.properties!.utterance!).sort(), [...ALLOWED_KEYS.utterance].sort());
+  assert.deepEqual(propKeys(ap.properties!.observed_at!).sort(), [...ALLOWED_KEYS.observedAt].sort());
+
+  const af = loadSchema("attested-flow.schema.json");
+  assert.deepEqual(propKeys(af).sort(), [...ALLOWED_KEYS.attestedFlow].sort());
+  assert.deepEqual(propKeys(af.properties!.attestor!.items!).sort(), [...ALLOWED_KEYS.attestor].sort());
+  assert.deepEqual(propKeys(af.properties!.source!).sort(), [...ALLOWED_KEYS.attestedFlowSource].sort());
+  assert.deepEqual(propKeys(af.properties!.flow!).sort(), [...ALLOWED_KEYS.attestedFlowFlow].sort());
+  assert.deepEqual(propKeys(af.properties!.utterance!).sort(), [...ALLOWED_KEYS.utterance].sort());
+  assert.deepEqual(propKeys(af.properties!.observed_at!).sort(), [...ALLOWED_KEYS.observedAt].sort());
 
   assert.deepEqual(propKeys(loadSchema("prediction.schema.json")).sort(), [...ALLOWED_KEYS.prediction].sort());
 
   const cv = loadSchema("coverage-verdict.schema.json");
   assert.deepEqual(propKeys(cv).sort(), [...ALLOWED_KEYS.coverageVerdict].sort());
-  const [setV, intV] = cv.properties.region.oneOf;
-  assert.deepEqual(propKeys(setV).sort(), [...ALLOWED_KEYS.regionSet].sort());
-  assert.deepEqual(propKeys(intV).sort(), [...ALLOWED_KEYS.regionInterval].sort());
+  const [setV, intV] = cv.properties!.region!.oneOf!;
+  assert.deepEqual(propKeys(setV!).sort(), [...ALLOWED_KEYS.regionSet].sort());
+  assert.deepEqual(propKeys(intV!).sort(), [...ALLOWED_KEYS.regionInterval].sort());
 
   assert.deepEqual(propKeys(loadSchema("gate-decision.schema.json")).sort(), [...ALLOWED_KEYS.gateDecision].sort());
 });
@@ -59,14 +75,14 @@ test("every contract schema declares additionalProperties:false at each object n
       if (node.items) assertClosedNode(node.items, `${where}[]`);
     }
   }
-  for (const name of ["attested-price", "prediction", "coverage-verdict", "gate-decision"]) {
+  for (const name of ["attested-price", "attested-flow", "prediction", "coverage-verdict", "gate-decision"]) {
     assertClosedNode(loadSchema(`${name}.schema.json`), name);
   }
 });
 
 test("forbidden-keys.json matches the TS FORBIDDEN_KEYS", () => {
   const fk = loadSchema("forbidden-keys.json");
-  assert.deepEqual([...fk.forbidden_keys].sort(), [...FORBIDDEN_KEYS].sort());
+  assert.deepEqual([...fk.forbidden_keys!].sort(), [...FORBIDDEN_KEYS].sort());
 });
 
 test("intentInRegion — set variant", () => {
@@ -88,6 +104,7 @@ test("intentInRegion — interval variant", () => {
 
 test("valid contracts serialize without throwing", () => {
   assert.doesNotThrow(() => serializeAttestedPrice(validAttestedPrice()));
+  assert.doesNotThrow(() => serializeAttestedFlow(validAttestedFlow()));
   assert.doesNotThrow(() => serializePrediction(validPrediction()));
   assert.doesNotThrow(() => serializeVerdict(validVerdictSet()));
   assert.doesNotThrow(() => serializeVerdict(validVerdictInterval()));
