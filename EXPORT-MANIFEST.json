@@ -17,7 +17,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "ee5714eec5dadb0ffc27bfa2c8503e0f87bcba8e1d89f2e58a5ab53a01198873",
+      "sha256": "6626be79187451c65ad85671a86b7db1ad93f4654f3ca1d003685c51e3830bf0",
       "bytes": 12945
     },
     {
@@ -42,8 +42,8 @@
     },
     {
       "path": "apps/harness/src/openapi.ts",
-      "sha256": "f1a62e0addc178d676563dae5a192507f7d5537955bddebc8d9090b4a4034d8d",
-      "bytes": 4562
+      "sha256": "d3819890c25ff0d1e2fad496103b67c0b069c04fb1df7041d31d275d0ac75418",
+      "bytes": 4732
     },
     {
       "path": "apps/harness/src/schema-projection.ts",
@@ -52,8 +52,8 @@
     },
     {
       "path": "apps/harness/src/server.ts",
-      "sha256": "54352f6a2505414bf2ee584794d639522140862b1483d1c6819048cb7d96b249",
-      "bytes": 10044
+      "sha256": "f4ecf4e0eea2e8f1c024ba7f687a577de4b1a73193db28087dd0956943b3c114",
+      "bytes": 10100
     },
     {
       "path": "apps/harness/src/shogen-fixture.ts",
@@ -84,6 +84,11 @@
       "path": "apps/harness/src/tools/registry.ts",
       "sha256": "14057b1140f168dbbacf55310fd717b4b5fe372515654b0c4ae6a04c56bef382",
       "bytes": 8124
+    },
+    {
+      "path": "apps/harness/src/version.ts",
+      "sha256": "56c8cf039e6a40cdf159e37bc4382b92ed61a20335d0cd990d837c96d3dd0f86",
+      "bytes": 1495
     },
     {
       "path": "apps/harness/test/attest.test.ts",
@@ -127,8 +132,8 @@
     },
     {
       "path": "apps/harness/test/server.test.ts",
-      "sha256": "fde8fb02941191bceae5f6bd04ba56a115b209f5e59562055403a96c2c1c82f8",
-      "bytes": 10432
+      "sha256": "b41689cec6717878392bfdce26d56ca3f337ff567b7989e88cca3de74b9d2560",
+      "bytes": 14684
     },
     {
       "path": "apps/harness/test/usde-calibration.test.ts",
@@ -197,8 +202,8 @@
     },
     {
       "path": "apps/site/app/fleet/page.tsx",
-      "sha256": "51dc41905d46fa40d412d32310578709dc39340e580b153d73fa445af8487487",
-      "bytes": 7416
+      "sha256": "363b128050b391a09a66b0771ae33c877a99571a91dca194939cf5d3b76e1c1d",
+      "bytes": 7839
     },
     {
       "path": "apps/site/app/globals.css",
@@ -226,9 +231,14 @@
       "bytes": 2846
     },
     {
+      "path": "apps/site/app/narabi/page.tsx",
+      "sha256": "2c2e2f2e2415aa5af0191af6f869b12d8ed73ae7c5d4f455ff6775443205baa9",
+      "bytes": 1731
+    },
+    {
       "path": "apps/site/app/page.tsx",
-      "sha256": "cdd052dab0f96c59bdc14db323b57e381f5869e84e342e2d713f03123ef354ae",
-      "bytes": 6693
+      "sha256": "32f4c61396542169c486c75df76985bf8866f35292c58c48e58634486c22cc26",
+      "bytes": 8461
     },
     {
       "path": "apps/site/app/products/page.tsx",
@@ -242,8 +252,8 @@
     },
     {
       "path": "apps/site/app/token/page.tsx",
-      "sha256": "047ed3f5dee09394c63d4b0bbb92e9825c4f7085b2750af66831bae75e1ecd69",
-      "bytes": 7728
+      "sha256": "863c6d9b2fea14e262ff28de3f61275e28394e8ab512d576713364d991ecc53f",
+      "bytes": 8555
     },
     {
       "path": "apps/site/app/writing/page.tsx",
@@ -356,19 +366,49 @@
       "bytes": 1174
     },
     {
+      "path": "apps/site/components/narabi-panel.tsx",
+      "sha256": "055d2300897b29a1a177839e785a2e3e20ea2daa17344ba3a244b3c91eda4eeb",
+      "bytes": 4902
+    },
+    {
+      "path": "apps/site/components/narabi/narabi-live.tsx",
+      "sha256": "f3eb62bad221908243b474517d2b24be6689cbf1caf4a552b0e5f77cdfea089e",
+      "bytes": 14270
+    },
+    {
       "path": "apps/site/components/panel-shell.tsx",
       "sha256": "518b212be1c9f6e8e4f8c2b99b9875c3c1b168e1ca20a8cb41dd58083c6b29fc",
       "bytes": 1501
     },
     {
       "path": "apps/site/components/placeholder-panel.tsx",
-      "sha256": "e4ccdd134e517a14dd63083db449428ceb973fe4b6438bd890d6955c35ac8594",
-      "bytes": 3458
+      "sha256": "dadf1d61c6eaf03066ef7952e5f94f267c1756577e085b92c3c5b06e3390f4ee",
+      "bytes": 4139
     },
     {
       "path": "apps/site/components/rsc-boundary-demo.tsx",
       "sha256": "fc7f8dfe96a1369830f331c88c81d9914afc9bc78824f7a5807ab25f765952d2",
       "bytes": 1040
+    },
+    {
+      "path": "apps/site/components/sas/sas-audit.ts",
+      "sha256": "3203b910718a630ba03727248a1d47e9e4de457a724e31c32b1e2a517cd92b07",
+      "bytes": 3509
+    },
+    {
+      "path": "apps/site/components/sas/sas-machine.ts",
+      "sha256": "a10a710a1671c2216e83355b5f0dc09e584e76c66fdbf4377098f5263eb8c5d9",
+      "bytes": 5046
+    },
+    {
+      "path": "apps/site/components/sas/sas-model.ts",
+      "sha256": "7da3bee64b4844031b82163731ff6528f7a7705594ad2fcbb5058da5d50de3e3",
+      "bytes": 6609
+    },
+    {
+      "path": "apps/site/components/sas/use-sas-state.ts",
+      "sha256": "6b5c6b2563e50cee802a924f6402b314d73be0d6b3819890cc845776fa1b6357",
+      "bytes": 1611
     },
     {
       "path": "apps/site/components/shogen-panel.tsx",
@@ -377,13 +417,13 @@
     },
     {
       "path": "apps/site/components/site-footer.tsx",
-      "sha256": "c7ead52ccd870bde7960fd3e892adbea54b1a586e78d1ac11184ce6fc5807596",
-      "bytes": 2943
+      "sha256": "cdddc655bf9b090bb895093369c33549b5a88b030119b1172441847ce5aa9b6f",
+      "bytes": 2865
     },
     {
       "path": "apps/site/components/site-header.tsx",
-      "sha256": "cc6fd6530fd836cc737489ffc61be7e92e53931f05b3c51b9400561dd877113f",
-      "bytes": 4655
+      "sha256": "3bffc4f0db5847492524aa1b097166f99952424c7a01ca9e2b483bfb005c510c",
+      "bytes": 4842
     },
     {
       "path": "apps/site/components/status-badge.tsx",
@@ -394,6 +434,11 @@
       "path": "apps/site/components/theme-provider.tsx",
       "sha256": "f4e6b055c43e8168ce4e28cc4c99ce29fbcc89fb09e96a920acc03d9e1d1f90b",
       "bytes": 2810
+    },
+    {
+      "path": "apps/site/components/token/ca-copy.tsx",
+      "sha256": "d8bb2054c97c53a876c02aa645fe7cdb935b539b4c385279b12a914c5eecd068",
+      "bytes": 2572
     },
     {
       "path": "apps/site/components/ui/button.tsx",
@@ -466,6 +511,21 @@
       "bytes": 2032
     },
     {
+      "path": "apps/site/lib/narabi-copy.ts",
+      "sha256": "c7b21a1bb9895374135b38163bb3efd3eecb1e0c5e38145fac803b54724e5cfa",
+      "bytes": 5978
+    },
+    {
+      "path": "apps/site/lib/narabi-live.ts",
+      "sha256": "ca5785a670f3faf00abb7a7293622d3970961ca74bc37ea5e272cdd607f702eb",
+      "bytes": 20527
+    },
+    {
+      "path": "apps/site/lib/narabi-snapshot.ts",
+      "sha256": "32f9b80455706a9c21471f3ec2ea2d98ad036d490b9401fabd3f469c71d6e67e",
+      "bytes": 3051
+    },
+    {
       "path": "apps/site/lib/profiles.ts",
       "sha256": "d8277d47c6a51810204985c055defc8e56434575cbc36edd7de97b43fd984bbb",
       "bytes": 3849
@@ -492,8 +552,8 @@
     },
     {
       "path": "apps/site/next.config.mjs",
-      "sha256": "d00ae98e695fcf94ee1a54acdc3b3ffb1b849bbd6800c65e5649430b26184b8d",
-      "bytes": 1006
+      "sha256": "f639b14ee879da52ef95e526fecf092424fa8cbe57a529775c9936984c461105",
+      "bytes": 1526
     },
     {
       "path": "apps/site/package.json",
@@ -567,13 +627,13 @@
     },
     {
       "path": "fixtures/PROVENANCE-byo-demo.md",
-      "sha256": "a2a19d882dc4d8af554682879e6a4f9f16cb76ba704d2905287973ca4079a4ec",
-      "bytes": 5739
+      "sha256": "cf6822e370edce1b2f431076691fb2570d087ab6f3585130fa13491cbd885b82",
+      "bytes": 6281
     },
     {
       "path": "fixtures/PROVENANCE-h5-e2e-trace.md",
-      "sha256": "e7102d0a878647a4f5852952247ce45299de66c7327fb2f3fec25b25c0dd0f46",
-      "bytes": 5666
+      "sha256": "10d5e273cfe49a1ddef2562eb872b01c370c2afc1f88fecbf85fa9d8a83a3424",
+      "bytes": 6190
     },
     {
       "path": "fixtures/PROVENANCE-s3-binance.md",
@@ -587,7 +647,7 @@
     },
     {
       "path": "fixtures/byo-demo-trace.json",
-      "sha256": "60f348689cc75db4978c04ec0e4a232c90fcf277720785fc6fabf27ad20c6ce3",
+      "sha256": "daf8d3eabacbc601e608d01936d02c0f7ba78dfb5a0d6f5741ecea5fb4eef6d2",
       "bytes": 9735
     },
     {
@@ -597,7 +657,7 @@
     },
     {
       "path": "fixtures/h5-e2e-trace.json",
-      "sha256": "94af6409267cb98bc9ff26da5e3a9a7e18653f9787ee8d7f3402ebc7b98acdee",
+      "sha256": "b429a2414b1a719d05a4e6789a3d22bb08cc64350c17d2bcb5060b6fb70d3654",
       "bytes": 15731
     },
     {
@@ -1092,7 +1152,7 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "f451fe93ee422f1f88f590f4fba24c5ae0d721083ccc7db9e087791b1782a5c3",
+      "sha256": "a1e45ff470c0d8f45df663c8692b92cc7e8505fe34641fab2893f184d4438d0c",
       "bytes": 27638
     },
     {
