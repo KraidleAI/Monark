@@ -146,14 +146,19 @@
       "bytes": 501
     },
     {
+      "path": "apps/sentinel/src/edetector.ts",
+      "sha256": "9cea5ada8fd7c2c94934ff6d16c38bad715cbe12e84fe39fc60d2e4dc6ae6454",
+      "bytes": 7581
+    },
+    {
       "path": "apps/sentinel/src/flow.ts",
       "sha256": "976bcb69ff1574842e4db9afd47fd3ff7e98ae9e9269e63920b8d53c77acd628",
       "bytes": 4303
     },
     {
       "path": "apps/sentinel/src/instrument.ts",
-      "sha256": "ed828df157ea6b978861b72d1ba022c98d88fe22eb52d3345d37e281ead635f9",
-      "bytes": 10030
+      "sha256": "5418b0fb860f9839bed992120f8ab9fd749fb282d4bd7f29bf01993f18783452",
+      "bytes": 15929
     },
     {
       "path": "apps/sentinel/src/rpc.ts",
@@ -182,8 +187,8 @@
     },
     {
       "path": "apps/sentinel/test/sentinel.test.ts",
-      "sha256": "0cf9b38bee2335f7e36a4631e5a98e007a21ddc0e6b8286a3bb1608ecfdc463d",
-      "bytes": 36268
+      "sha256": "1d726b61da2a7f13ecbd991ed120d6f4f136ebbd46b647c3f0100dce42bef989",
+      "bytes": 55021
     },
     {
       "path": "apps/site/COMPONENTS-PROVENANCE.md",
