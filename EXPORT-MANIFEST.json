@@ -197,38 +197,38 @@
     },
     {
       "path": "apps/site/app/apple-icon.svg",
-      "sha256": "146e94f03670db37088b6b47c0e38d7a0b2b985c76eb7ba92743b99dd7b54e36",
+      "sha256": "3d2af2a8521d6c94add2e07fd52403a8f257ea96a2199e9e4c4658c482bcd77f",
       "bytes": 638
     },
     {
       "path": "apps/site/app/console/page.tsx",
-      "sha256": "ec84fc59db63b338e891f9363e2e2c80244d2ccd28fb30de909eb690070aae3e",
-      "bytes": 3507
+      "sha256": "8f654c14672d3942aef519279fb8ea9aa2dee6b0b9f79c58de7c0d6e6e8f745e",
+      "bytes": 3516
     },
     {
       "path": "apps/site/app/fleet/page.tsx",
-      "sha256": "363b128050b391a09a66b0771ae33c877a99571a91dca194939cf5d3b76e1c1d",
-      "bytes": 7839
+      "sha256": "632516d6dd8345d3d0d9dd54ff298733fade1dac6d6155ddabc226776651a133",
+      "bytes": 8886
     },
     {
       "path": "apps/site/app/globals.css",
-      "sha256": "1b9f35f02d97cf54238d448caa26c20664d80ef15fcb4d0d962102853a1f4e9f",
-      "bytes": 8331
+      "sha256": "df5da7d887a4018664221fb5cf7c7fd03dffff8785e7d83c7a0f7636ccf22145",
+      "bytes": 8711
     },
     {
       "path": "apps/site/app/how/page.tsx",
-      "sha256": "934f83c52f8ee8bece507a2336df845048f4fce50209ba07414ba3e308be4431",
-      "bytes": 17632
+      "sha256": "8cf732a1fb5f34d9d3964467a1fabf32d9b3dbccc2db80e31356c81def9683f8",
+      "bytes": 20939
     },
     {
       "path": "apps/site/app/icon.svg",
-      "sha256": "bb9156d6ec572e522bb787bcfea1a2da4c599d9f491c7abcdf908b12393dd7ba",
+      "sha256": "585eb30d7a3864dbc2f1b994c1396e767c52f47b8030041df1182c474d8da3ff",
       "bytes": 646
     },
     {
       "path": "apps/site/app/integrators/page.tsx",
-      "sha256": "7bbe5015d4caafa21198ee29f4ec4adc54b3dd759338892d4703dec4a8f40217",
-      "bytes": 13087
+      "sha256": "53797d0a164c9b3aabffd9b1f7c7b36f5c5df7e5aac94dc009bbd118c8e32d85",
+      "bytes": 14517
     },
     {
       "path": "apps/site/app/layout.tsx",
@@ -237,18 +237,18 @@
     },
     {
       "path": "apps/site/app/narabi/page.tsx",
-      "sha256": "2c2e2f2e2415aa5af0191af6f869b12d8ed73ae7c5d4f455ff6775443205baa9",
-      "bytes": 1731
+      "sha256": "81529a82a3a6cdf1be9e75dcfa4caea6e4f7fe0b74a517cd1df55eb97f502fb2",
+      "bytes": 1740
     },
     {
       "path": "apps/site/app/page.tsx",
-      "sha256": "32f4c61396542169c486c75df76985bf8866f35292c58c48e58634486c22cc26",
-      "bytes": 8461
+      "sha256": "d316da9a5ad0076fdd33c915f0d622a47c1b0474a818337d3d8a5667c1fba6e3",
+      "bytes": 8488
     },
     {
       "path": "apps/site/app/products/page.tsx",
-      "sha256": "afa5c06828bb1b2f57b0476e8d0168cff9cf19b0ce8a7ee208ee8816dd068d74",
-      "bytes": 3496
+      "sha256": "23289becc47339543d3522d9c3d918122056a1225de4d795de6fd35f7415dd04",
+      "bytes": 3517
     },
     {
       "path": "apps/site/app/roadmap/page.tsx",
@@ -257,8 +257,8 @@
     },
     {
       "path": "apps/site/app/token/page.tsx",
-      "sha256": "863c6d9b2fea14e262ff28de3f61275e28394e8ab512d576713364d991ecc53f",
-      "bytes": 8555
+      "sha256": "90d7f6e8a023b8e8c330f0a5d25e97b0d97ad29ce697a506d803fb14a5de35c7",
+      "bytes": 9780
     },
     {
       "path": "apps/site/app/writing/page.tsx",
@@ -272,13 +272,13 @@
     },
     {
       "path": "apps/site/components/agent-card.tsx",
-      "sha256": "2b07467e31d7093b11dedaf637ba51f350cf8cd75777c1844c4c3a7eaf5397bd",
-      "bytes": 1365
+      "sha256": "9ad1fbf730f16118243494a81dede0bbdaf73af3cbf9f7d43d25f52ee537ad60",
+      "bytes": 1387
     },
     {
       "path": "apps/site/components/gate-sim/board.tsx",
-      "sha256": "3352edecc485e5fd5411b4cb05dd06209e4fbffa77194d7fdc3d159856a2b06f",
-      "bytes": 18821
+      "sha256": "6655a4e2f0165e5ec7d4a993620209d116177fbb14126862770a02906643f922",
+      "bytes": 19084
     },
     {
       "path": "apps/site/components/gate-sim/controls.tsx",
@@ -292,13 +292,13 @@
     },
     {
       "path": "apps/site/components/gate-sim/index.tsx",
-      "sha256": "6da2bf98cd2275d86423990c287e6bae50a9ade8a55576476d08d4d9c76d73bf",
-      "bytes": 9422
+      "sha256": "a72ee86e14ecf5171fd8e0961d5befbdb9404cf1d5add57c01558ff8aa9535fd",
+      "bytes": 10191
     },
     {
       "path": "apps/site/components/gate-sim/meter.tsx",
-      "sha256": "2d476a40dfc1264cb372b7c6f43275d96dc382f8429a952e40fba7b2ed6fba52",
-      "bytes": 1215
+      "sha256": "1e7b4073db26daf1ca2af02af03f015197441f4985129f73d2830b692b1eacb3",
+      "bytes": 1203
     },
     {
       "path": "apps/site/components/gate-sim/use-gate-sim.ts",
@@ -307,8 +307,8 @@
     },
     {
       "path": "apps/site/components/hikae-panel.tsx",
-      "sha256": "2fc886872da4fbb17936e2ec50b01277ed2e6869466db235371868a6c2c000cd",
-      "bytes": 4816
+      "sha256": "4eff885e0696fa87e167df842bb3cc2e222f1c3812139c32805dccc0c04ebc09",
+      "bytes": 5124
     },
     {
       "path": "apps/site/components/marks/genkan-mark.tsx",
@@ -372,13 +372,13 @@
     },
     {
       "path": "apps/site/components/narabi-panel.tsx",
-      "sha256": "055d2300897b29a1a177839e785a2e3e20ea2daa17344ba3a244b3c91eda4eeb",
-      "bytes": 4902
+      "sha256": "89bcb783362b9c66c4fbdf663de49018be6459c70f9381f2a900136e3bdfbdb0",
+      "bytes": 6759
     },
     {
       "path": "apps/site/components/narabi/narabi-live.tsx",
-      "sha256": "f3eb62bad221908243b474517d2b24be6689cbf1caf4a552b0e5f77cdfea089e",
-      "bytes": 14270
+      "sha256": "d1ef3cb5ea99984f7fcaa4a025151e9bd31173ec2d255ec84811f1ce5326a45f",
+      "bytes": 30422
     },
     {
       "path": "apps/site/components/panel-shell.tsx",
@@ -387,8 +387,8 @@
     },
     {
       "path": "apps/site/components/placeholder-panel.tsx",
-      "sha256": "dadf1d61c6eaf03066ef7952e5f94f267c1756577e085b92c3c5b06e3390f4ee",
-      "bytes": 4139
+      "sha256": "95a1c53d44e1d2a730238118686c23a140d36d7fd050dade4354720d7d37246c",
+      "bytes": 5612
     },
     {
       "path": "apps/site/components/rsc-boundary-demo.tsx",
@@ -417,23 +417,23 @@
     },
     {
       "path": "apps/site/components/shogen-panel.tsx",
-      "sha256": "2ac9b0d1fa79d37552a5106a183204836daa38acf86cb793933d88dc27f622cb",
-      "bytes": 4120
+      "sha256": "c775865f221ad4013bc88cd8407754969ff9d24e6d94390c13efd1e94dc5749e",
+      "bytes": 4429
     },
     {
       "path": "apps/site/components/site-footer.tsx",
-      "sha256": "cdddc655bf9b090bb895093369c33549b5a88b030119b1172441847ce5aa9b6f",
-      "bytes": 2865
+      "sha256": "9bc949390d70b17518d7bcc94cae930b119ca2d647295bfc8a7291877568ac5f",
+      "bytes": 2883
     },
     {
       "path": "apps/site/components/site-header.tsx",
-      "sha256": "3bffc4f0db5847492524aa1b097166f99952424c7a01ca9e2b483bfb005c510c",
-      "bytes": 4842
+      "sha256": "77b1f586924a91638e351a9368e50360fb89afae92201d4c245e08b6ed3911a0",
+      "bytes": 4820
     },
     {
       "path": "apps/site/components/status-badge.tsx",
-      "sha256": "797ff94d7c7b70e72d9c53ec04477a9a947c7316b1aa3f5437701252b1c8f72d",
-      "bytes": 812
+      "sha256": "4cbff4f2d7721e7c329a84eadeb9dc5c0d05b04c607e47e6664b45e39ad1a786",
+      "bytes": 807
     },
     {
       "path": "apps/site/components/theme-provider.tsx",
@@ -442,8 +442,8 @@
     },
     {
       "path": "apps/site/components/token/ca-copy.tsx",
-      "sha256": "d8bb2054c97c53a876c02aa645fe7cdb935b539b4c385279b12a914c5eecd068",
-      "bytes": 2572
+      "sha256": "0b713cf363749091dc47579853bcc300432199bb6dd4660fc7d5ea7f417a3df5",
+      "bytes": 2584
     },
     {
       "path": "apps/site/components/ui/button.tsx",
@@ -457,8 +457,8 @@
     },
     {
       "path": "apps/site/components/ukemi-panel.tsx",
-      "sha256": "2839cfe84934621038e8ca16f49c669e727287a37ea44d9306c3ed00807f2c0b",
-      "bytes": 4657
+      "sha256": "e02e5eed33171b83bde11fee7605293d54fb2b7a87dc0860cedce2f24e371020",
+      "bytes": 4965
     },
     {
       "path": "apps/site/components/upcoming-panel.tsx",
@@ -467,8 +467,8 @@
     },
     {
       "path": "apps/site/components/what-inside.tsx",
-      "sha256": "3363575b0fef91335936dca18c4ecee465b4c90134998962ee3696a65e96972f",
-      "bytes": 1288
+      "sha256": "acd22b69a19cf649c3faa1f04a055797f5c6661c67daba35abb4605efc7d845f",
+      "bytes": 1909
     },
     {
       "path": "apps/site/content/.gitkeep",
