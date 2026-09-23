@@ -22,10 +22,10 @@ export const metadata: Metadata = {
 // the registers, never hard-coded. The design INVERTS the segment↔product mapping — we follow fleet.ts.
 export default function ProductsPage() {
   return (
-    <main className="mx-auto max-w-[1440px] px-6 lg:px-10 py-16">
+    <main className="mx-auto max-w-[1200px] px-6 py-16">
       <section className="flex flex-col gap-4">
         <div className="font-mono text-xs uppercase tracking-[0.06em] text-muted-foreground">Products</div>
-        <h1 className="max-w-3xl font-heading text-4xl font-semibold lg:text-5xl tracking-tight text-foreground">
+        <h1 className="max-w-3xl font-heading text-4xl font-semibold tracking-tight text-foreground">
           Market-facing products, by the profile that needs them.
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
@@ -35,7 +35,8 @@ export default function ProductsPage() {
         </p>
       </section>
 
-      {/* The five products (fingers) — fleet.ts is the source of truth for the mapping and the status. */}
+      {/* The six products (fingers; MONARK Bell upcoming since ruling Q3) — fleet.ts is the source of truth for the
+          mapping and the status; a `<<name>>` register string renders as a named placeholder. */}
       <section className="mt-10">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PRODUCTS.map((p) => (
@@ -45,7 +46,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Core products — the three VISAGE artefacts, each sold to a named buyer. Distinct
-          register (lib/visage.ts); never folded into PRODUCTS (keeps PRODUCTS.length === 5). */}
+          register (lib/visage.ts); never folded into PRODUCTS (PRODUCTS is frozen at six by the register test). */}
       <section className="mt-16">
         <h2 className="font-heading text-2xl font-medium tracking-tight text-foreground">Core products</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">

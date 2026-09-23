@@ -1,13 +1,14 @@
 # Derived by scripts/export-public.mjs from the internal workflow (ADR-M004 D7 bis): lot-size gate removed, push trigger added.
 # MONARK — CI gates (instantiated from an internal CI template;
 # concrete tools fixed by ADR-M003 D9 and its dated addenda).
-# Invariant (not parameterisable): EVERY job is BLOCKING. No `continue-on-error` (test 38 checks this
-# mechanically, ADR-M003 D11).
+# Invariant (not parameterisable): EVERY job is BLOCKING and UNCONDITIONAL. No `continue-on-error` and no
+# conditional `if` key on any job or step (test 38 checks BOTH mechanically; ADR-M003 D11 / D9 octies).
 #
 # Provenance of pinned action SHAs (never guessed — GitHub API `git/ref/tags/<tag>`, cross-checked
 # on 2026-09-05 and re-verified by independent review on 2026-09-06):
 #   actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
 #   actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+#   actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1 (SBOM upload, Lot CRA-B; gh api repos/actions/upload-artifact/git/ref/tags/v7.0.1 -> object.type=commit, measured 2026-09-19)
 #
 #
 # Rewritten on 2026-09-06 under ADR-M003 D10; English only (D0.5).
@@ -20,6 +21,11 @@ on:
 jobs:
   g1-controle-generation:
     runs-on: ubuntu-latest
+    # timeout-minutes on EVERY job (checkpoint-2 V-1(b)): a hung run (e.g. an unbounded recorder retry) cannot pend
+    # a job toward GitHub's 6h ceiling. Bound = measured job wall-time ×3, capped ≤ 20 (measured 2026-09-19: g3
+    # ~62s incl. npm ci ~16s + ~31s tests ⇒ 10; the other jobs are faster ⇒ 5). --test-timeout (package.json) is the
+    # finer per-test guard; this is the coarse per-job backstop.
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Pinned model identifiers only (R-1/R-4 — a bare tier resolves platform-side)
@@ -27,6 +33,7 @@ jobs:
 
   g3-verification:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -40,6 +47,7 @@ jobs:
 
   g4-architecture:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -52,6 +60,7 @@ jobs:
 
   g6-compliance:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -59,5 +68,43 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci
+      # SBOM (CRA no-regret, ADR-CRA-B L-3): a CycloneDX bill of materials. --package-lock-only makes the
+      # COMPONENT SET reproducible (183 components, CycloneDX 1.5, measured 2026-09-19); without it the count
+      # drifts with the installed tree. serialNumber and metadata.timestamp are per-run, so the bytes are not
+      # reproducible. Not published to a tag here (release trigger, out of this lot). scripts/sbom.mjs mirrors
+      # THIS command locally; its SBOM_COMMAND is asserted against this run line by ci_publishes_sbom.
+      - name: Generate CycloneDX SBOM (npm sbom; ADR-CRA-B L-3)
+        run: npm sbom --sbom-format cyclonedx --omit dev --package-lock-only > sbom.cdx.json
+      - name: Upload SBOM artifact (per run)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
+          if-no-files-found: error
       - name: Dependency audit (high and above = failure)
         run: npm audit --audit-level=high
+
+  g3-site:
+    runs-on: ubuntu-latest
+    # Site build gate (ADR-M003 D9 octies). `next build` TYPECHECKS the apps/site TSX (excluded from the root
+    # `tsc --noEmit`, tsconfig.json:23-33 — the ONLY program that sees the site .tsx) and renders /fleet; the
+    # O-2 step then asserts the built HTML body carries each served note. Wired LOCALLY: this workflow triggers
+    # on pull_request only and the local --no-ff merges open no PR, so the composition is replayed from these
+    # `run:` lines locally at G2 / checkpoint-2, never validated by these merges. Blocking CONDITIONAL: it reds
+    # without blocking until g3-site joins the closed list of required status checks (branch protection, an
+    # orchestrator action; JOURNAL-PROVENANCE). timeout-minutes: measured job wall-time x3, capped <= 20
+    # (2026-09-20: npm ci ~15 s + next build ~22 s ~= 37 s => ~2 min => 5; parity with g1/g4/g6). 10 only on a
+    # sourced re-measure if the first cold run exceeds 100 s.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install (lockfile must be present and consistent)
+        run: npm ci
+      - name: Build the storefront (typechecks apps/site TSX, invisible to the root tsc; a stray type reds)
+        run: npm run build -w @monark/site
+      - name: O-2 — assert the built /fleet HTML body carries each served note (scripts/assert-fleet-html.mjs)
+        run: node scripts/assert-fleet-html.mjs

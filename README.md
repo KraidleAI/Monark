@@ -14,7 +14,8 @@ authorization budget (`B_t`) — never a probability of being right.**
 
 Single token, single ticker (`MONARK`). The agents are **products, not tokens**: sensors that
 attest, a gate that authorizes, and acts that execute. This repository is the MONARK
-**tokenisation layer** plus the **five frozen interface contracts** that let those agents interoperate.
+**tokenisation layer** plus the **six frozen interface contracts** (the sixth, AttestedBook, upcoming
+until served) that let those agents interoperate.
 
 ## The backbone — the gate
 
@@ -36,7 +37,7 @@ are the point: they say what exists today and what is only named.
 
 | Layer | What it is | Status |
 |---|---|---|
-| **Backbone** — the gate | Hikae (coverage control) + the MONARK token's budget `B_t`; turns a sensor reading into `commit \| defer \| abstain` | **Built** — five frozen contracts, Hikae + Ukemi engines, CI |
+| **Backbone** — the gate | Hikae (coverage control) + the MONARK token's budget `B_t`; turns a sensor reading into `commit \| defer \| abstain` | **Built** — six frozen contracts (the sixth, AttestedBook, upcoming until served), Hikae + Ukemi engines, CI |
 | **Fleet** — a company of agents | sensors → gate → acts, one token across all of them | **4 built · Narabi runs (class served; timeline published daily) · 7 named** |
 | **Harness** — DeFAI, multi-directional | the same fleet made reachable *by other agents* over HTTP / MCP | **Built** — public 4-tool MCP endpoint (attest · gate · cascade · calibrate) + skill on ClawHub |
 | **Self-improving company** | agents that rate, improve, and sell one another's products | **Direction, unscheduled** |
@@ -45,7 +46,7 @@ are the point: they say what exists today and what is only named.
 
 **Built** (Phase one, closed under an independent review and a closing verdict):
 
-- **Shōgen** — attested perception (verified price testimony)
+- **Shōgen** — attested perception (an attested price testimony — origin and bytes, never truth)
 - **Hikae** — coverage-controlled inference (the gate)
 - **Ukemi** — liquidation-cascade survival
 
@@ -95,24 +96,25 @@ outside that region, *not* a delivered prediction product:
 ## The interlocking (why the agents work together)
 
 ```
-sensors (attest)  →  the gate: Hikae + MONARK B_t  →  acts (execute)
+sensors (attest)  →  the gate: Hikae + MONARK B_t  →  acts (execute · upcoming)
                         commit | defer | abstain
 ```
 
-The first vertical, built end to end: `Shōgen → Hikae → Ukemi`. Every future act plugs into the same
+The first vertical, built and served piece by piece and composed on the gate path. Every future act plugs into the same
 gate; every future sensor attests into the same contract shape.
 
-## Five frozen contracts
+## Six frozen contracts
 
 The interface is frozen and language-neutral (source of truth: `schemas/*.json`):
 
 | Contract | Producer | Meaning |
 |---|---|---|
-| `AttestedPrice` | Shōgen | A **verified** testimony (bytes + hash + named residual hypotheses). The price *number* is interpreted by a Hikae-side adapter — Shōgen deliberately carries no number and no score. |
-| `AttestedFlow` | Narabi | A **verified** testimony of redemption flow (bytes + hash + a **closed** `residual[]` enum). `burns`/`mints`/`supply` are carried **raw** over a block window — no score, no price; the velocity is derived downstream by the velocity adapter, never pre-computed. |
+| `AttestedPrice` | Shōgen | An **attested** testimony (bytes + hash + named residual hypotheses) — origin and bytes, never truth. The price *number* is interpreted by a Hikae-side adapter — Shōgen deliberately carries no number and no score. |
+| `AttestedFlow` | Narabi | An **attested** testimony of redemption flow (bytes + hash + a **closed** `residual[]` enum) — origin and bytes, never truth. `burns`/`mints`/`supply` are carried **raw** over a block window — no score, no price; the velocity is derived downstream by the velocity adapter, never pre-computed. |
 | `Prediction` | any predictor | The `ŷ` Hikae conformalises, with `predictor_id` (venue/model). |
 | `CoverageVerdict` | Hikae | Conformal region — **polymorphic** `set` (classification) \| `interval` (regression, so Ukemi plugs in). No `p_correct` field. |
 | `GateDecision` | Hikae L3 | `commit \| defer \| abstain` + `remaining_budget` = `B_t`, the depletable conformal authorization capacity that attaches to MONARK (never a return). |
+| `AttestedBook` | Ukemi (recorder) | A **self-declared** reading of a liquidation book at an archive block under a keyless RPC quorum: the digests (book, holders) with block/provider/quorum context — no price, no score, **no verifier**. **Upcoming until served** (schema frozen; the served path is wired at U-6). |
 
 ## The token
 
@@ -150,6 +152,8 @@ hermes mcp add monark --url https://mcp.monarkgate.tech/mcp
 openclaw mcp add monark --url https://mcp.monarkgate.tech/mcp --transport streamable-http
 ```
 
+No personal data is required to use the service (no account, e-mail, or wallet).
+
 ## Status
 
 **Phase two — integration.** The contract freeze and the Hikae + Ukemi engines are **closed** under an
@@ -173,7 +177,7 @@ npm run ci   # vocabulary gate → typecheck (tsc strict) → tests (node:test)
   `node:test` (Node ≥ 24 native TS type-stripping). **Key-closedness** is enforced hand-rolled at runtime
   (mirroring Shōgen's zero-dep unknown-key refusal); the **value constraints** (min/unique items, hash
   length, ASCII-printable) are expressed in the JSON Schemas and exercised against `ajv` in tests.
-- **`ajv` is a dev-dependency** (test-only): it compiles the five frozen JSON Schemas, resolves the
+- **`ajv` is a dev-dependency** (test-only): it compiles the six frozen JSON Schemas, resolves the
   `$ref`s, and proves they reject the value-constraint violations (empty/duplicate arrays, wrong-length
   hash, control chars) that the TS types alone do not. Applying `ajv` at the runtime boundary to validate
   an external Rust/Python producer's JSON is a natural later extension.
@@ -185,7 +189,7 @@ schemas/            JSON Schema — the language-neutral source of truth (closed
 packages/contracts  TS binding: types, closed-check, forbidden-keys, calib_digest, serializers, tests
 packages/hikae      HAC-CP engine: L1 split / L2 monitor / L3 gate, interval conformer  (Phase one — built)
 packages/ukemi      liquidation-cascade survival: clearing, liquidable                  (Phase one — built)
-packages/monark     cross-agent gate — freezes the wiring signature; token budget B_t   (engine = Phase two)
+packages/monark     integration adapters: Shōgen→AttestedPrice, Narabi AttestedFlow→Prediction; canonical CBOR
 packages/atelier    local demo surface (not a shipped product)
 apps/site           public vitrine
 apps/harness        the MCP / HTTP harness — four tools over the frozen contracts
