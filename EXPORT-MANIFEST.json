@@ -26,6 +26,46 @@
       "bytes": 2541
     },
     {
+      "path": "apps/bell/keys/bell-keyring.json",
+      "sha256": "beec868a9e7d8e396de0f0541ab20572a2159068e8102bb303cb9af368b6ef81",
+      "bytes": 239
+    },
+    {
+      "path": "apps/bell/package.json",
+      "sha256": "9a665dbe2120233d46a33b1a1ad17d8c62981d106ab51c614e84484061112a1c",
+      "bytes": 675
+    },
+    {
+      "path": "apps/bell/scripts/bell-chain.d.mts",
+      "sha256": "45172d84bdaeabf3754a440a920b189a8c2dd11c9ef31f3ccd3d07440a3dc4a2",
+      "bytes": 2616
+    },
+    {
+      "path": "apps/bell/scripts/bell-chain.mjs",
+      "sha256": "521270a3793716c53b61ba1ee7ccec5aa4faa0f24406cba04e6a254398816ce7",
+      "bytes": 11470
+    },
+    {
+      "path": "apps/bell/scripts/bell-publish.d.mts",
+      "sha256": "0c6c86c99270fd7a0e5ee46aa51aac50bbc671d852c0b54d4bbb31175654d122",
+      "bytes": 3154
+    },
+    {
+      "path": "apps/bell/scripts/bell-publish.mjs",
+      "sha256": "1355738188e0d2306b8d39689871fa97321de44314d5e678f9a868fc0c9e7f80",
+      "bytes": 33150
+    },
+    {
+      "path": "apps/bell/scripts/bell-verify.d.mts",
+      "sha256": "816170184b10f47ce635c038db9c9aa00ef9bde2210d3035b80359665ab9aaa2",
+      "bytes": 1979
+    },
+    {
+      "path": "apps/bell/scripts/bell-verify.mjs",
+      "sha256": "14a7e07c116ef3be70a8168f6113f46a214e04ccaa40bcba85b179f755324e8b",
+      "bytes": 10111
+    },
+    {
       "path": "apps/harness/README.md",
       "sha256": "6f8352a1c78502a0dfc7d7ad028827bda28d28cb53c4cec2e9742311100abd9f",
       "bytes": 8223
@@ -412,18 +452,18 @@
     },
     {
       "path": "apps/site/app/bell/anchors/page.tsx",
-      "sha256": "4e40024b7624e6023b616eab521a8022a7c31a1cb74fd44d7ecc345b78275f4b",
-      "bytes": 6862
+      "sha256": "78a1367617a60d06689b95277969334988651674f70932d6e2096ba159d3c84d",
+      "bytes": 6882
     },
     {
       "path": "apps/site/app/bell/method/page.tsx",
-      "sha256": "bf2e8f0f0a64123fefa3b0c4e431f55eb93f266c4322f75593253acee43adeba",
-      "bytes": 26148
+      "sha256": "32cb3454f59395910a99c50139189903bee43d88091adbe6c19c5ad70b8e0b3c",
+      "bytes": 28885
     },
     {
       "path": "apps/site/app/bell/page.tsx",
-      "sha256": "2fe83c98cd529858bc84e2e089909bb7a465cc744145c3bd786e2c46727ded48",
-      "bytes": 26038
+      "sha256": "87261bd2259cddb2ea34e3f763b66c7a18c7a10969e35acae0a2d1b655e952e4",
+      "bytes": 28795
     },
     {
       "path": "apps/site/app/bell/privacy/page.tsx",
@@ -442,8 +482,8 @@
     },
     {
       "path": "apps/site/app/fleet/page.tsx",
-      "sha256": "5d94142d94284b6ae3b154013e613ea251523c911f54393dc06f2242e77a86a3",
-      "bytes": 7926
+      "sha256": "ad809d9e364bf9e0583360a2ec31f4731ded3a9fdf3dafc878fea6bec1e93c1d",
+      "bytes": 7916
     },
     {
       "path": "apps/site/app/fonts/ArchivoBlack-Regular.ttf",
@@ -492,8 +532,8 @@
     },
     {
       "path": "apps/site/app/globals.css",
-      "sha256": "d1c7a6fff008b0691f89325dc36ea56a37b08e16d25918032566cd4cb80d6693",
-      "bytes": 28442
+      "sha256": "98039c7a2804870998e99a5b1808cd15f9e709e9be9aa32cef13ddb002e07af1",
+      "bytes": 28564
     },
     {
       "path": "apps/site/app/how/page.tsx",
@@ -522,13 +562,13 @@
     },
     {
       "path": "apps/site/app/page.tsx",
-      "sha256": "19c4c308e65cfdcca66d8d885a22c25e69d4d228ab03cd93e6b850e79756b0db",
-      "bytes": 13445
+      "sha256": "5c1ca654c6725024c27bd879b40063845955b6483d79a7c390778209c652abb7",
+      "bytes": 13503
     },
     {
       "path": "apps/site/app/products/page.tsx",
-      "sha256": "b9bedb5c56cfdcb1f880a2fca43aeb5c3850cfb919090399a7d7dff9d8d52ce0",
-      "bytes": 3623
+      "sha256": "383776a6a9187337d258de69336f67289c898838632b2568e0622e4818ce8233",
+      "bytes": 3704
     },
     {
       "path": "apps/site/app/roadmap/page.tsx",
@@ -539,6 +579,11 @@
       "path": "apps/site/app/token/page.tsx",
       "sha256": "863c6d9b2fea14e262ff28de3f61275e28394e8ab512d576713364d991ecc53f",
       "bytes": 8555
+    },
+    {
+      "path": "apps/site/app/ukemi/course/page.tsx",
+      "sha256": "a9d9972299ef1b6bf3c67334efd0b1d60dec69cf83d4428137594996569cc4ca",
+      "bytes": 4323
     },
     {
       "path": "apps/site/app/ukemi/page.tsx",
@@ -562,8 +607,8 @@
     },
     {
       "path": "apps/site/components/bell/anchors-table.tsx",
-      "sha256": "0584ca9e4b7efcfef140b63c21cd035ade20cda955f4d08846eb31c5161da421",
-      "bytes": 5517
+      "sha256": "a0f7827351eae679a9d89f23c06f894eca56f85b3a81889c3afc33939c673f19",
+      "bytes": 5522
     },
     {
       "path": "apps/site/components/bell/contact.tsx",
@@ -577,8 +622,8 @@
     },
     {
       "path": "apps/site/components/gate-sim/board.tsx",
-      "sha256": "4632d4562765883df42991eec164f24df64491f3233f76266c3e7b8cca974a97",
-      "bytes": 19782
+      "sha256": "05c603da0d5342c67e3b3059c9c321c08b2b54b698a6edd0ed1718dc715be3d9",
+      "bytes": 19802
     },
     {
       "path": "apps/site/components/gate-sim/controls.tsx",
@@ -687,8 +732,8 @@
     },
     {
       "path": "apps/site/components/noyau/noyau-engine.ts",
-      "sha256": "ad4d72fce50d100df3f3d3010014cd6019117335a3e6cd616c1545e777e8e0e8",
-      "bytes": 19208
+      "sha256": "32f2174c834ff4cc9b421ac99bf3ac4effbcbb387fa6bafaee52c1a1b726416b",
+      "bytes": 19726
     },
     {
       "path": "apps/site/components/noyau/noyau.tsx",
@@ -782,13 +827,13 @@
     },
     {
       "path": "apps/site/components/ukemi/ukemi-page.tsx",
-      "sha256": "60a8381115d6aaad9771d03f4ee23a3e9db8f029dbfe69c4f1077ef1d5f726d9",
-      "bytes": 7451
+      "sha256": "6e0c752712d8b036902731e734940927c7d9bf22752e218635424ed9d7926f18",
+      "bytes": 7892
     },
     {
       "path": "apps/site/components/upcoming-panel.tsx",
-      "sha256": "6a5d8ee493affaa484309840ed4b9dc564484ac2ba6425baba2c7cd1b5ce6419",
-      "bytes": 5046
+      "sha256": "8ef7baa26c30d37443fd4789d6d55b07796087f8f59caeb4719f24baaad0e6b4",
+      "bytes": 5243
     },
     {
       "path": "apps/site/components/what-inside.tsx",
@@ -806,9 +851,19 @@
       "bytes": 3873
     },
     {
+      "path": "apps/site/data/bell-served.json",
+      "sha256": "c473570439ff029cf7d60e125d06e4dd106fb059594f9e1c421b70dfcd6d0897",
+      "bytes": 3115
+    },
+    {
       "path": "apps/site/data/manifest.sha256.json",
-      "sha256": "684ec3e64199a967b755b23a9c4f451bbbaa2b2a7e4fec8ec4e6c7ac617e2269",
-      "bytes": 1294
+      "sha256": "455ed79de76cd2fb18fca1c5849936fec49e29cf17b3eb13b22a5a147f3239d5",
+      "bytes": 1853
+    },
+    {
+      "path": "apps/site/data/ukemi-course.json",
+      "sha256": "fe792aed1cf34774a9f7d9af3fa2bdc562c47ada25102ca948ac55c4b2183bb4",
+      "bytes": 18513
     },
     {
       "path": "apps/site/lib/agents-presentation.ts",
@@ -846,14 +901,19 @@
       "bytes": 4949
     },
     {
+      "path": "apps/site/lib/bell-served-load.ts",
+      "sha256": "19ddf2585fe4e0672833802d1f94a10eeb0511fc491370af9fe948d6e6b079d0",
+      "bytes": 7964
+    },
+    {
       "path": "apps/site/lib/fleet-presentation.ts",
-      "sha256": "0a97fe64676861ae31e09218484365625be51d05a6a2d56e3770588eca7e9242",
-      "bytes": 7042
+      "sha256": "94a9c39cf093bee58cce10ecad37f08c72024a64daa3f146d5f12b5a30d0a7db",
+      "bytes": 7339
     },
     {
       "path": "apps/site/lib/fleet.ts",
-      "sha256": "5ad3dd16eb16bcc56bd4993780ebf4906fbff46a61066b28334ea699a9785159",
-      "bytes": 16690
+      "sha256": "9ee594e0caa08426ba6ec8ef96964bf51ccbcfc281601d0a4d0c0401066f12ff",
+      "bytes": 18679
     },
     {
       "path": "apps/site/lib/gate-enums.ts",
@@ -909,6 +969,11 @@
       "path": "apps/site/lib/ukemi-copy.ts",
       "sha256": "3aa74bf7542511044360963a25a84db7df1373d6ea0fec5270cc731958f1e903",
       "bytes": 10804
+    },
+    {
+      "path": "apps/site/lib/ukemi-course-load.ts",
+      "sha256": "c552e82d28466357c86e18144b5fe3f86640f58e0aeac9ee9ad5ce4944d8fab7",
+      "bytes": 6123
     },
     {
       "path": "apps/site/lib/utils.ts",
@@ -1007,8 +1072,8 @@
     },
     {
       "path": "apps/site/public/bell/anchors/mint_resume-SPYx-2-manifest.txt.ots",
-      "sha256": "cc8109a35c4b8464c4f4b1d5cf48a2c808e83a0d5491b766e55b6b568b72082c",
-      "bytes": 805
+      "sha256": "4afd753ead21ec9a887af59ea0a87ae68bc89d96baaa4c26eaa6f0f22d26096e",
+      "bytes": 3879
     },
     {
       "path": "apps/site/public/bell/anchors/mint_resume-TSLAx-2-manifest.txt",
@@ -1682,8 +1747,8 @@
     },
     {
       "path": "packages/rpc-guard/src/transport.ts",
-      "sha256": "f95567f3212d8782062f7b3ad879497d8fea05b19891ca16209e3ef69a1a03a2",
-      "bytes": 20819
+      "sha256": "fa1b9f1b7afd4e624537b14ad42c59cd2938cdf22e38f60a53c4f9e172af8485",
+      "bytes": 20827
     },
     {
       "path": "packages/rpc-guard/test/bare-revert.test.ts",
@@ -1937,8 +2002,8 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "3a7ab1f55cadec8eab6624a0f68e8e63a9a539f522e73108a60fa8d7307e57b2",
-      "bytes": 36248
+      "sha256": "a79ad0915ec2fbe5145919ad0ff6bc99664bf1564ef7bd02e086255fb7c7a2c5",
+      "bytes": 37762
     },
     {
       "path": "scripts/grep-forbidden.d.mts",
@@ -1952,13 +2017,13 @@
     },
     {
       "path": "scripts/lang-exempt.json",
-      "sha256": "02b9a9248a1688ebd1952f3417a2ba4d5d8a4fac3f11b30226eada7d8b65f49d",
-      "bytes": 2908
+      "sha256": "2df5cd475d26f405cf989e8cb1917bef3fa936c862b8ec5c4cd329f8a69efaad",
+      "bytes": 2948
     },
     {
       "path": "scripts/lang-gate.mjs",
-      "sha256": "3bb63efaf293431b27ff406901b6d2ad8987f84d90ba180c1f753676d3ff1ca1",
-      "bytes": 16730
+      "sha256": "4a51bf0d1a8b6bd21e67eda2fc495d82b83cc7d3a915447fdbde7ca0222ab403",
+      "bytes": 16941
     },
     {
       "path": "scripts/lint-ratchet.mjs",
@@ -1974,6 +2039,16 @@
       "path": "scripts/usde-full-pull.mjs",
       "sha256": "b4ccc892f8ba004f3bd9ec6375b52d7d93a417744cc2d0747adc3f0f077552ee",
       "bytes": 12905
+    },
+    {
+      "path": "scripts/verify-bell.d.mts",
+      "sha256": "e86f306ac15084a1755362697f622cd086fbaa8c92f4e3ffe20faf8f66e9953b",
+      "bytes": 1675
+    },
+    {
+      "path": "scripts/verify-bell.mjs",
+      "sha256": "ab0a386e52fe3f88a4d5524ddb264efca89aff8901b9e92add87e85aec42c70f",
+      "bytes": 19204
     },
     {
       "path": "skills/monark/DEMO.md",
@@ -2002,8 +2077,8 @@
     },
     {
       "path": "vocab-banned.json",
-      "sha256": "b72788600c1f68901083cbf3d669af6a9d4996008cd93dd42fa713a56550ddd4",
-      "bytes": 25785
+      "sha256": "d064f5dc446f56b46d8406f5a1aaa8cc12b8397b4dbd808b967b0d46601e40ac",
+      "bytes": 26120
     }
   ],
   "excluded_tests": [
