@@ -2,11 +2,14 @@
 // Reads apps/site/public/bell/anchors/ (the files a visitor downloads), re-checks each line (manifest bytes hash to
 // the line's digest; the proof attests that digest) and reads each proof's attestations. FAIL-CLOSED: any mismatch
 // throws, so `next build` reds rather than render a pair a third party could not check. Every number shown on the
-// page (block heights, counts) comes from here — never a literal in the page source (orchestrator ruling (3)).
+// page (block heights, counts) comes from here — never a literal in the page source. The publications register is read by
+// loadPublications (lib/bell-publications-load.ts, the pure reader passed in); the course manifests list no published record.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { readOtsProof, anchorStatus, type AnchorRow, type AnchorsRegister, type AnchorStatus } from "@/lib/bell-anchors";
+import { readOtsProof, anchorStatus, manifestDigests, manifestEntries, bindPublicationAnchor, bindPublicationRowToLines, type AnchorRow, type AnchorsRegister, type AnchorStatus, type TimelineLineFacts } from "@/lib/bell-anchors";
+import { loadPublicationAnchors } from "@/lib/bell-publications-load";
+export { utcLabel } from "@/lib/bell-anchors";
 
 /** URL path the anchors are served under (apps/site/public/bell/anchors/). */
 export const ANCHORS_ROUTE = "/bell/anchors";
@@ -26,16 +29,25 @@ export interface AnchorsView {
   /** Mints that have a start line but no end line yet, in first-seen order (derived from the register). */
   openMints: string[];
   hasFinal: boolean;
+  /** Instruments named by the register's lines, in first-seen order (derived from the register). */
+  mints: string[];
 }
 
+const anchorsDir = (): string => join(process.cwd(), "public", "bell", "anchors");
+/** The served publications register, every row bound to its files and to lines[] of the site data (fail-closed). */
+export const loadPublications = (lines: readonly TimelineLineFacts[]) =>
+  loadPublicationAnchors(anchorsDir(), { lines }, { readOtsProof, anchorStatus, manifestEntries, bindPublicationAnchor, bindPublicationRowToLines });
+export type PublicationsView = ReturnType<typeof loadPublications>;
+
 export function loadAnchors(): AnchorsView {
-  const dir = join(process.cwd(), "public", "bell", "anchors");
+  const dir = anchorsDir();
   const reg = JSON.parse(readFileSync(join(dir, "anchors.json"), "utf8")) as AnchorsRegister;
   const rows: AnchorView[] = reg.rows.map((r) => {
     if (r.proof_file === null || r.manifest_file === null) return { ...r, status: null, sameDigestAsLater: null };
     const manifest = readFileSync(join(dir, r.manifest_file));
     const digest = createHash("sha256").update(manifest).digest("hex");
     if (digest !== r.manifest_sha256) throw new Error(`bell anchors: ${r.manifest_file} does not hash to its line's digest`);
+    manifestDigests(manifest.toString("utf8")); // shape check only (fail-closed): the course manifests list no published record
     const proof = readOtsProof(new Uint8Array(readFileSync(join(dir, r.proof_file))));
     if (proof.digestHex !== r.manifest_sha256) throw new Error(`bell anchors: ${r.proof_file} does not attest its line's digest`);
     return { ...r, status: anchorStatus(proof), sameDigestAsLater: null };
@@ -56,12 +68,8 @@ export function loadAnchors(): AnchorsView {
     withoutProof: rows.filter((r) => r.status === null).length,
     openMints: started.filter((m) => !ended.has(m)),
     hasFinal: rows.some((r) => r.boundary === "final"),
+    mints: [...new Set(rows.filter((r) => r.mint !== null).map((r) => r.mint as string))],
   };
-}
-
-/** "2026-09-22T14:07:18Z" -> "2026-09-22 14:07:18" (UTC). */
-export function utcLabel(iso: string): string {
-  return iso.replace("T", " ").replace(/Z$/, "");
 }
 
 /** First and last eight hex characters of a digest, the full value kept for a title attribute. */

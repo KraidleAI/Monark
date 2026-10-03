@@ -151,11 +151,20 @@ test("keyless_http_error_reprises_redacted_body", async () => {
 
 // C-5 belt: the fixed preamble + code NEVER contains a vocabulary token, for EVERY resolved operator label x EVERY
 // error name x representative codes - so the hint is the SOLE token carrier (a false token would trip a range split).
-test("error_preamble_carries_no_vocabulary_token", () => {
+// killer: packages/rpc-guard/src/transport.ts:141 CONST "BodyTooLarge" -> "Body too large"
+test("error_preamble_carries_no_vocabulary_token", async () => {
   const env = { BELL_SOLANA_RPC: "https://sol.example.invalid", HELIUS_API_KEY: "FAKEKEY-9z", CHAINSTACK_ETH_URL: CS_ENV.CHAINSTACK_ETH_URL };
   const ops = Object.keys(resolveOperators(env).classes);
   assert.ok(ops.length >= 6, "several operators resolved");
-  const names = ["AbortError", "TypeError", "NetworkError", "HttpError", "NonJsonBody", "RpcError"];
+  // RPC-GUARD-BODY-TIMEOUT-1: a bounded body over its cap is raised under the name BodyTooLarge, its whole message free of tokens.
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = () => Promise.resolve(httpResp("x".repeat(64), 200));
+  let over: unknown;
+  try { over = await resolveOperators(env, { maxBodyBytes: 16 }).transport("chainstack" as OperatorLabel, "eth_call", [{}, "0x1"]).then(() => 0); }
+  catch (e) { over = e; } finally { globalThis.fetch = realFetch; }
+  assert.ok(over instanceof TransportError && over.name === "BodyTooLarge" && over.code === 200, `an over-cap body: ${msgOf(over)}`);
+  assert.equal(closedHint(msgOf(over)), "", `the message of an over-cap body carries no vocabulary token: ${msgOf(over)}`);
+  const names = ["AbortError", "TypeError", "NetworkError", "HttpError", "NonJsonBody", "RpcError", "BodyTooLarge"];
   const codes: Array<number | undefined> = [undefined, 3, -32000, 400, 401, 429, 500];
   for (const op of ops) for (const name of names) for (const code of codes) {
     const codeStr = code !== undefined ? ` (code ${String(code)})` : "";
@@ -189,6 +198,18 @@ test("keyless_host_after_truncation_is_redacted_on_the_raw_body", async () => {
   assert.ok(err instanceof TransportError && err.name === "HttpError" && err.code === 400);
   const m = msgOf(err);
   for (let n = HHOST.length; n >= 4; n--) assert.ok(!m.includes(HHOST.slice(0, n)), `a >= 4-char keyless host prefix leaked (n=${String(n)}): ${m}`);
+});
+
+// ADR-CODEQL-ALERTS-1 D2 (C-V2-1): redact escapes every target form (RegExp.escape) before joining them into ONE regex,
+// so each form matches LITERALLY. A body carrying the host AND its dot-substituted look-alike `eth-drpc-org` (no target
+// form) redacts the host only (positive control) and keeps the look-alike verbatim. Mutant "escaping removed"
+// (`.map((t) => t)`): `eth.drpc.org` becomes a pattern whose dots match any char => the look-alike reads `<redacted>` too
+// => reds. A bare `drpc-org` would be inert (the operator label is never a target form), so it is not the witness.
+test("keyless_redact_matches_target_forms_literally_not_as_patterns", async () => {
+  const err = await raiseVia({}, "drpc.org", () => Promise.resolve(httpResp("x eth.drpc.org y eth-drpc-org z", 400)));
+  assert.ok(err instanceof TransportError && err.name === "HttpError" && err.code === 400, "typed keyless HttpError, code 400");
+  assert.equal(err.detail, "x <redacted> y eth-drpc-org z", "the host is redacted and its dot-substituted look-alike survives verbatim");
+  assert.ok(msgOf(err).endsWith("x <redacted> y eth-drpc-org z"), `the message carries the same detail: ${msgOf(err)}`);
 });
 
 // C-G-2: validateRevertData is FAIL-CLOSED on an unparseable operator url - secretTargets returns undefined, so the key

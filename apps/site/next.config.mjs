@@ -1,7 +1,7 @@
-// apps/site/next.config.mjs — Next.js App Router config for the MONARK storefront (ADR-M004 D2 addendum).
+// apps/site/next.config.mjs — Next.js App Router config for the MONARK storefront.
 // @next/mdx (Vercel-maintained) renders the committed MDX content pages; its peers @mdx-js/loader and
 // @mdx-js/react are pinned in package.json. No deployment config here — local `next dev` only;
-// hosting (Cloudflare + VPS) is the F-deploy increment (ADR-M004 Q2, out of this lot).
+// hosting (Cloudflare + VPS) is configured outside this repository.
 import createMDX from "@next/mdx";
 
 /** @type {import('next').NextConfig} */
@@ -14,11 +14,24 @@ const nextConfig = {
   // Local review only: in production Caddy serves /narabi/* (the sentinel's published files) before Next
   // ever sees the request, so this rewrite is unreachable there. Under `next dev` it proxies the two
   // published files from the live host so the links on /narabi resolve during review instead of 404ing.
+  // Same for /dojo-served/* (the Dojo host's published files, relayed in production by the site's proxy snippet
+  // deploy/Caddyfile.monark-dojo-site.snippet): under `next dev` only, so the /dojo reread resolves during review.
   async rewrites() {
     if (process.env.NODE_ENV !== "development") return [];
-    return [{ source: "/narabi/:file(state.json|timeline.jsonl)", destination: "https://monarkgate.tech/narabi/:file" }];
+    return [{ source: "/narabi/:file(state.json|timeline.jsonl)", destination: "https://monarkgate.tech/narabi/:file" },
+      { source: "/dojo-served/:path*", destination: "https://dojo.monarkgate.tech/:path*" }];
   },
-  // Bell anchors (lot SITE-CHARTE-C): `.ots` is ALSO the OpenDocument spreadsheet-template extension, so the static
+  // /building is the page title of /roadmap (MONARK Building); the route keeps its address for the links that exist, and the
+  // alias redirects to it (temporary, so the canonical address can still change without a cached permanent redirect).
+  // The applications page moved to /applications; its former address redirects to it permanently (the new address is
+  // final, so a cached permanent redirect is intended there).
+  async redirects() {
+    return [
+      { source: "/building", destination: "/roadmap", permanent: false },
+      { source: "/products", destination: "/applications", permanent: true },
+    ];
+  },
+  // Bell anchors: `.ots` is ALSO the OpenDocument spreadsheet-template extension, so the static
   // server would label an OpenTimestamps proof as a spreadsheet (measured locally). Serve the proofs as bytes to
   // download; manifests stay text/plain.
   async headers() {
