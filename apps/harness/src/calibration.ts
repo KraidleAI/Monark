@@ -8,8 +8,8 @@
  * guard, so a silent drift in the HIKAE draw (or in this derivation) throws at import time rather than
  * changing the gate's behaviour unnoticed.
  *
- * It is DECLARED synthetic (a plumbing fixture, not a measured predictor): the honesty of the class
- * lives in the tool description and in `BTC_DIR_CALIB_PROVENANCE`, never inside a frozen contract
+ * It is DECLARED synthetic (a plumbing fixture, not a measured predictor). The class is retired (ADR-CM B-5): no longer
+ * served, and the tool description names it only as retired; its honesty lives in `BTC_DIR_CALIB_PROVENANCE`, never inside a frozen contract
  * (K-1). No cascade calibration exists — that class abstains (`under_calib`), by design (D5).
  */
 import { S2_DEFAULT, generateLabeledSeries, indicatorScore, HARNESS_VERSION } from "@monark/hikae";
@@ -286,6 +286,32 @@ const COMMITTED_CALIBRATIONS: readonly CommittedCalibration[] = [
  *  caller abstains `under_calib` (isolation of population on the wire, C-10, fail-closed). */
 export function lookupCommittedCalibration(taskClass: string, predictorId: string): CommittedCalibration | undefined {
   return COMMITTED_CALIBRATIONS.find((c) => c.taskClass === taskClass && c.predictorId === predictorId);
+}
+
+/** Lower-case ASCII letters A to Z only (no locale, no Unicode folding): the BYO look-alike fold (ADR-CM B-1). */
+export function asciiLower(s: string): string {
+  return s.replace(/[A-Z]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 32));
+}
+
+/**
+ * True iff (taskClass, predictorId) equals a committed key after `asciiLower` on both sides (ADR-CM B-1,
+ * audit P3 S-11): a checksum-case address or a case variant of a committed key is the committed key for the
+ * BYO guard. Never used to SERVE a calibration: serving stays on the exact `lookupCommittedCalibration`.
+ */
+export function matchesCommittedKeyFolded(taskClass: string, predictorId: string): boolean {
+  const cls = asciiLower(taskClass);
+  const key = asciiLower(predictorId);
+  return COMMITTED_CALIBRATIONS.some((c) => asciiLower(c.taskClass) === cls && asciiLower(c.predictorId) === key);
+}
+
+/**
+ * True iff (taskClass, predictorId) equals a committed key after `fold` on both sides (ADR-CM B-10: the ASCII
+ * confusable reduction of gate.ts). Like `matchesCommittedKeyFolded`, a BYO guard only, never a serving lookup.
+ */
+export function matchesCommittedKeyWith(fold: (s: string) => string, taskClass: string, predictorId: string): boolean {
+  const cls = fold(taskClass);
+  const key = fold(predictorId);
+  return COMMITTED_CALIBRATIONS.some((c) => fold(c.taskClass) === cls && fold(c.predictorId) === key);
 }
 
 /**

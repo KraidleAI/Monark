@@ -117,8 +117,8 @@
     },
     {
       "path": "apps/harness/README.md",
-      "sha256": "0d83ffdb08aba2e8d8cf3307a72174ae131b0a166b94916422ef12eabf70aad7",
-      "bytes": 10573
+      "sha256": "044b088b247f633118c9e6a352784b00c80f9996b3aa26c3d49e073964fe5128",
+      "bytes": 11086
     },
     {
       "path": "apps/harness/package.json",
@@ -127,18 +127,23 @@
     },
     {
       "path": "apps/harness/src/attestation-binding.ts",
-      "sha256": "9451d5fe3e05bd5c726d54aae107e903ec15be291afcc47cfbe1ec96beb40579",
-      "bytes": 4257
+      "sha256": "3e59882de94f3fd6e457b4637f69c4e10556e10d8eee008ef14926e383321eed",
+      "bytes": 4757
     },
     {
       "path": "apps/harness/src/calibration.ts",
-      "sha256": "6aef88d2b20d65c85452732164c9c7e54235a50bc9ceab5ea7dc6ca2abc7e490",
-      "bytes": 27188
+      "sha256": "585ad77ebab9cf5712b6ae315ba35f69f62bf0c0c5cf281778adc2b11034e81f",
+      "bytes": 28635
+    },
+    {
+      "path": "apps/harness/src/class-policy.ts",
+      "sha256": "19127536113b0767c6691df099ede1a1d9354e56c69ed4071624b3e31f73562b",
+      "bytes": 1851
     },
     {
       "path": "apps/harness/src/http.ts",
-      "sha256": "0be341e834acfd11be02aa34e87fe256916e71d9cf77cf9d7e3ac9f3bd0a7cb8",
-      "bytes": 5769
+      "sha256": "2b22161f2d09aa80992b650bb534c5119d6b3cf7087fd8bdfbd794622cb37949",
+      "bytes": 6639
     },
     {
       "path": "apps/harness/src/openapi.ts",
@@ -147,13 +152,13 @@
     },
     {
       "path": "apps/harness/src/schema-projection.ts",
-      "sha256": "ef21862710a56264558da8aaef3a63a9ef68727a6df8300f73f1da1701f5cf49",
-      "bytes": 25260
+      "sha256": "1d351ba5e84c3aed8945604d5186384d3d0eae84b1b671b82968450c1ecd396d",
+      "bytes": 25261
     },
     {
       "path": "apps/harness/src/server.ts",
-      "sha256": "f4ecf4e0eea2e8f1c024ba7f687a577de4b1a73193db28087dd0956943b3c114",
-      "bytes": 10100
+      "sha256": "a52a4fa19c7641f4db73cbc0ac0e0d2271d4f5e3fbb0dc18e4f076e4936d2157",
+      "bytes": 10264
     },
     {
       "path": "apps/harness/src/shogen-fixture.ts",
@@ -162,33 +167,33 @@
     },
     {
       "path": "apps/harness/src/tools/attest.ts",
-      "sha256": "8e08881c69fdee10cc2ea1750529a889b4453b796519b668f058ae5a981c6f34",
-      "bytes": 3988
+      "sha256": "600d11a5c550e54778d9e8b7255e8b93da3b321460fec57c818d45c53dbad9e1",
+      "bytes": 4175
     },
     {
       "path": "apps/harness/src/tools/calibrate.ts",
-      "sha256": "e9cbf6a7cba858473d2a8cf97a7e01cb02d6e7f7469f6625ab16eccccc8bd1a3",
-      "bytes": 10088
+      "sha256": "188fa31a8f92bb156cf301743e7ef7ff4bc03195d3c49999ed56e6a7b31d488c",
+      "bytes": 10284
     },
     {
       "path": "apps/harness/src/tools/cascade.ts",
-      "sha256": "2c6d97da0c66ccf32148447033c9e5175cd3bff279bf3b21d74a95837b8da01f",
-      "bytes": 12860
+      "sha256": "af3f7c85540693da51e0f4a29f426d4197729f6edc1e76670be3b14107bbedc2",
+      "bytes": 13026
     },
     {
       "path": "apps/harness/src/tools/gate.ts",
-      "sha256": "4cc340e29c3f9224917efa2a75fd63cec684e49c1a3acf7f5b7d07cf42fffb9a",
-      "bytes": 45762
+      "sha256": "07a6b7cf84f1d34e01fcba0aebbce0c830239f5b684ef8107cd20cc5d7c34f51",
+      "bytes": 58260
     },
     {
       "path": "apps/harness/src/tools/registry.ts",
-      "sha256": "03dfe77afafad26fe8ab26d33cc9ad13919f207b2bdf5819c0b286f4e675ea4b",
-      "bytes": 8375
+      "sha256": "a1d2562cf8364d965de89fa3b5637fca7114e413b1d3a0f7d8de13ddfd9cfa1b",
+      "bytes": 9473
     },
     {
       "path": "apps/harness/src/tools/ukemi-predict.ts",
-      "sha256": "2f10afe45630280be23a9b3bb742e576b62f2a3f410b006c374a0349bd29a878",
-      "bytes": 14816
+      "sha256": "ed81db81cc3b720601f38652478284608def3f96488de10f604b5901d49ef2f6",
+      "bytes": 15019
     },
     {
       "path": "apps/harness/src/ukemi-strata.ts",
@@ -216,19 +221,64 @@
       "bytes": 18231
     },
     {
+      "path": "apps/harness/test/error-code-sites.test.ts",
+      "sha256": "2ed17e74581da81e3fa85e78027d35f443c17b2dc96feade1b2ca58f580e2867",
+      "bytes": 8079
+    },
+    {
+      "path": "apps/harness/test/error-code.test.ts",
+      "sha256": "df4b0a9604bc3382f0a771ed34ac7fe70f4b9f366b237e4bc135565d7f46f41c",
+      "bytes": 17786
+    },
+    {
+      "path": "apps/harness/test/gate-byo-confusable.test.ts",
+      "sha256": "beab88d48d22a242c64fad9f69dba4128c53f31bcbdf1449e7dce6fff1aea79f",
+      "bytes": 6336
+    },
+    {
+      "path": "apps/harness/test/gate-byo-lookalike.test.ts",
+      "sha256": "94d02a1e95435fd9a0a45535db6871380c3b724fe1b78a2355ea0698a418f9e0",
+      "bytes": 7916
+    },
+    {
+      "path": "apps/harness/test/gate-byo-tau-cap.test.ts",
+      "sha256": "37fd2f587622cfb790b56359c47c534447e570a410548540f33538f6eccc9635",
+      "bytes": 4977
+    },
+    {
+      "path": "apps/harness/test/gate-cm2b.test.ts",
+      "sha256": "4d2b7be50d4f68f864dba72902eca0a3ff9e1294e4fde549fe6c5bb6addf10c4",
+      "bytes": 16852
+    },
+    {
+      "path": "apps/harness/test/gate-empty-set.test.ts",
+      "sha256": "2366bfb3a9986c5749d979aa32036e0bd8370a60390ecb905bac882a1522e2b5",
+      "bytes": 6013
+    },
+    {
       "path": "apps/harness/test/gate-liq.test.ts",
-      "sha256": "4cdb05f00d7273666e2770d0cfe10bdd2f42c8cacd254631d9b7c4829ce17f3b",
-      "bytes": 27304
+      "sha256": "b8c5c833f90c8e8b5894d6ba5cc176b87416cf06a998b0998fdf50a34398962b",
+      "bytes": 27790
+    },
+    {
+      "path": "apps/harness/test/gate-produced-at.test.ts",
+      "sha256": "a9684e56bcea3c32caf810efa0587c248fdb98e89a292891e3eb4275d948607a",
+      "bytes": 10724
     },
     {
       "path": "apps/harness/test/gate.test.ts",
-      "sha256": "2da6198ea566f95830ff0b791602643405f49ee691650860c2550f87c1409038",
-      "bytes": 55698
+      "sha256": "61a232f6d1327817b77c5f2aa50d4910f7428cb5d26ed911fd17845e4876f409",
+      "bytes": 55588
+    },
+    {
+      "path": "apps/harness/test/helpers/loopback.ts",
+      "sha256": "f4e6e121b669e6e81cea94c0d08f05bf0ef11a39717869d868562e2b5960b9e0",
+      "bytes": 3665
     },
     {
       "path": "apps/harness/test/http.test.ts",
-      "sha256": "dd17801455bc263c01300f1185e569de285bfa764185e0b12c961571a39a876f",
-      "bytes": 17067
+      "sha256": "11d3556e411bdbf79b0f24bd8a85faeb6f13c70aae34169c5a2d7ba77d92885a",
+      "bytes": 17353
     },
     {
       "path": "apps/harness/test/openapi.test.ts",
@@ -236,9 +286,14 @@
       "bytes": 9074
     },
     {
+      "path": "apps/harness/test/oracle-fixtures.test.ts",
+      "sha256": "ed32d789ba44ced42ddbcda14b47b76fee78b3d63043fa85c22eadeae37154b2",
+      "bytes": 6370
+    },
+    {
       "path": "apps/harness/test/registry.test.ts",
-      "sha256": "aadc60bc6c37043a267b44c548255003f6fe080e703c08cbc2f7a2bd803882ce",
-      "bytes": 16792
+      "sha256": "26fd6a81240fe8ab7b1f7b94ecc6a97e8e41afbc517bbca2573993897c4189c9",
+      "bytes": 17371
     },
     {
       "path": "apps/harness/test/schema.test.ts",
@@ -246,9 +301,14 @@
       "bytes": 7982
     },
     {
+      "path": "apps/harness/test/served-replay-cm3.test.ts",
+      "sha256": "fad0268e82d0abd41b7f032a50097efeea5035ab7eae72da2d66d7ca0c9b9dc1",
+      "bytes": 5568
+    },
+    {
       "path": "apps/harness/test/server.test.ts",
-      "sha256": "62f11a645ff14b1841f6ef7c254de543e2b300880407f4bac1381dff2eff928d",
-      "bytes": 17659
+      "sha256": "3adb04e66e2c253528f1b318b5f3da6990f57fb5a9a9ffd769f2458354c86cda",
+      "bytes": 18049
     },
     {
       "path": "apps/harness/test/ukemi-predict.test.ts",
@@ -447,8 +507,8 @@
     },
     {
       "path": "apps/sentinel/test/sentinel-chainstack-guard.test.ts",
-      "sha256": "3535eda25712ee485aef23426ac76fe709404e198681e36eda58b3583e619ef7",
-      "bytes": 32516
+      "sha256": "441f2e684a9bbfe56af8304982aacb363850750e885ddeeab2e06673d317286f",
+      "bytes": 34632
     },
     {
       "path": "apps/sentinel/test/sentinel-exclude-hosts.test.ts",
@@ -752,8 +812,8 @@
     },
     {
       "path": "apps/site/app/how/page.tsx",
-      "sha256": "8bd2be1c8b532690cbad8aab875de9e54c3e96e1466bbe25e0274b1f5166bb44",
-      "bytes": 18224
+      "sha256": "073901653b764915c6e45e72e0f4d14f51ab00d456c5ad07e0938a99b16ea170",
+      "bytes": 18301
     },
     {
       "path": "apps/site/app/icon.svg",
@@ -762,8 +822,8 @@
     },
     {
       "path": "apps/site/app/integrators/page.tsx",
-      "sha256": "d6617da8025473571ad97002f9633694fb2f160aa1223681474b9902d1a05ec9",
-      "bytes": 18251
+      "sha256": "eafb1432d8ac55d6379f31ff4896cc57bd8b811bb07ee14f52c6992cab53828a",
+      "bytes": 18243
     },
     {
       "path": "apps/site/app/layout.tsx",
@@ -787,8 +847,8 @@
     },
     {
       "path": "apps/site/app/roadmap/page.tsx",
-      "sha256": "47e9994c039a73e562d575bb8581f041134d4f0b33681dbcc9b0e894677d9fe3",
-      "bytes": 18697
+      "sha256": "944051d647580d5fdb56bcbb8f2198da32a18776c981634e644f8ac2c018c651",
+      "bytes": 18730
     },
     {
       "path": "apps/site/app/token/page.tsx",
@@ -887,8 +947,8 @@
     },
     {
       "path": "apps/site/components/docs/schemas/gate.tsx",
-      "sha256": "294b287b0540f30461223720865f7867f8469cd738aa7770db7a0862a02160ca",
-      "bytes": 14733
+      "sha256": "fea7d640325aeebc39bb9fcc1b6ce72cd7d0b91cebd2cc249f01f40fed73e1d9",
+      "bytes": 14717
     },
     {
       "path": "apps/site/components/docs/schemas/glossary.tsx",
@@ -957,8 +1017,8 @@
     },
     {
       "path": "apps/site/components/gate-sim/controls.tsx",
-      "sha256": "d4eda49c5700c995ded4ef7a9aa0b166eea977458c1c894c91fec2af87530cd7",
-      "bytes": 5392
+      "sha256": "cb78ea1bfa79ed963cca63e2d8cfba57f87d6d1d2a16abb3ff8b266cda39098e",
+      "bytes": 5420
     },
     {
       "path": "apps/site/components/gate-sim/diagram.tsx",
@@ -982,8 +1042,8 @@
     },
     {
       "path": "apps/site/components/hikae-panel.tsx",
-      "sha256": "af1eca69c50485678b907f7b5c06c1471f9666c9e498eb8b61edb679b67625a2",
-      "bytes": 5625
+      "sha256": "bb86a788302b9acc771f4f52ebfe1ea48e30ebc38e608310ce0ff2df368d56e2",
+      "bytes": 5443
     },
     {
       "path": "apps/site/components/lockups.tsx",
@@ -1197,12 +1257,12 @@
     },
     {
       "path": "apps/site/data/harness-served.json",
-      "sha256": "55bd4ad228d6b015a49906a3e13036a7f789790cf22e4d7028027401eace6f4a",
-      "bytes": 7862
+      "sha256": "77d7b9143e8b6c03bb9f5670941f2550499fbc7cf687fb8bf76ff5542cf61fb1",
+      "bytes": 7835
     },
     {
       "path": "apps/site/data/manifest.sha256.json",
-      "sha256": "5a494e5346883409f7ba450e3d6ac44d42f3534b95c20be36aeaea978c1556d7",
+      "sha256": "ad8841024b792d4c809cf473ce5fc21ac98456c1b073a64d3a882ee80a516b3b",
       "bytes": 4037
     },
     {
@@ -1212,7 +1272,7 @@
     },
     {
       "path": "apps/site/data/narabi-served.json",
-      "sha256": "1b2667aae4a62db94cc83ef394ade34260ef654706bf4275e9d96bd0a04a304e",
+      "sha256": "591d2c7003d98c26c687918be4c457d6e20960e41eda5984215c69146aea0172",
       "bytes": 1423
     },
     {
@@ -1222,7 +1282,7 @@
     },
     {
       "path": "apps/site/data/ukemi-served.json",
-      "sha256": "b2b08d1513784ab77aa36ef35a5062a15c944f05e707f923667e66012f0720be",
+      "sha256": "50114a6dc2cea13ac7e9ac1821bf504c23adabb7c08d254017c3c05cba8de143",
       "bytes": 2837
     },
     {
@@ -1282,8 +1342,8 @@
     },
     {
       "path": "apps/site/lib/docs-pieces.ts",
-      "sha256": "9a894611a13e488b7856036fd1df36ed10c9b1c334cf9e2018766a06ecd4bca0",
-      "bytes": 17065
+      "sha256": "7023e2c3cd4f6217b3180e14a61c68940f84e7d3e1fec1675a37b599dca3cf95",
+      "bytes": 17073
     },
     {
       "path": "apps/site/lib/docs-references-load.ts",
@@ -1332,8 +1392,8 @@
     },
     {
       "path": "apps/site/lib/fleet.ts",
-      "sha256": "35b28de798adcfef8d919f0a25eca3e06ce097c1c1677a47ef59ba8bf3e7850c",
-      "bytes": 25884
+      "sha256": "998fdf33a3c461f687ec604524c63ee739ef1b7dd77acba571523aa979f232f4",
+      "bytes": 26339
     },
     {
       "path": "apps/site/lib/gate-enums.ts",
@@ -1342,8 +1402,8 @@
     },
     {
       "path": "apps/site/lib/harness-served-load.ts",
-      "sha256": "6038a138b996c087ce64b5e75c2ae65c71bd0da312a12260dd66f89ea7e2a3fb",
-      "bytes": 22046
+      "sha256": "538217699b0c157f2f336f83e012c20e97c30b268a875f36da41b7234914ab3a",
+      "bytes": 22178
     },
     {
       "path": "apps/site/lib/how-copy.ts",
@@ -1397,8 +1457,8 @@
     },
     {
       "path": "apps/site/lib/sim.ts",
-      "sha256": "f9743e1b291312c82214984ab962ee9c6f0a8c238dbf588ea895f0d3933b9573",
-      "bytes": 12093
+      "sha256": "bc42af80332e6e709d1ae30c62cab5e67ae39485e273f86b16e97196e6a753fe",
+      "bytes": 12095
     },
     {
       "path": "apps/site/lib/status.ts",
@@ -1727,8 +1787,8 @@
     },
     {
       "path": "fixtures/PROVENANCE-h5-e2e-trace.md",
-      "sha256": "b920c41e5e7414df0fc58bb8ed59a85a0ef380c55054e0982a01191d2cb1bbe6",
-      "bytes": 11669
+      "sha256": "327ddde79b2f51307fa71ed56aa7e14f82d890e40b62af5e4cb2e58c6bd56c58",
+      "bytes": 12470
     },
     {
       "path": "fixtures/PROVENANCE-s3-binance.md",
@@ -1752,8 +1812,8 @@
     },
     {
       "path": "fixtures/h5-e2e-trace.json",
-      "sha256": "0b32b33071b15c6e40ea529d87221fdade7bf4fb5f2171773802a85083569932",
-      "bytes": 21951
+      "sha256": "b016bf4a4950cff1d39dccd970f7371f4dc8e3bb261d3d14c53b372825eda0a0",
+      "bytes": 21753
     },
     {
       "path": "fixtures/manifest.json",
@@ -1817,7 +1877,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "d7a429e1afb7618b5b037f3923b01fb35fca5f76cdc6b5a49bfb20495b059700",
+      "sha256": "2c7db1aa06ce761c11ba98a530dbb310f568096af0719260a7e57b5c8ebd6f35",
       "bytes": 1376
     },
     {
@@ -1976,9 +2036,19 @@
       "bytes": 264
     },
     {
+      "path": "packages/hikae/src/binomial.ts",
+      "sha256": "42a82c7e4db94116697463f817b33b43244ed8de980cb1295901d564d0ed429a",
+      "bytes": 8193
+    },
+    {
+      "path": "packages/hikae/src/canonical-row.ts",
+      "sha256": "e5f9a956a6ba6bd50c5d5296e5fd77ed4f43dea8ca9ea2a18e0408cb1edb1b27",
+      "bytes": 3943
+    },
+    {
       "path": "packages/hikae/src/index.ts",
-      "sha256": "b4d9c919120b838c8a3f9a0f1e9acd543bcc47715befce29c2c07b374f95e972",
-      "bytes": 3564
+      "sha256": "8f25dcb74498017ba02934bda2b01085840733111a2d78b7029ff54f3e32d822",
+      "bytes": 4739
     },
     {
       "path": "packages/hikae/src/interval-conformer.ts",
@@ -1987,8 +2057,8 @@
     },
     {
       "path": "packages/hikae/src/l1-split.ts",
-      "sha256": "9206df9189d3eba6af61ba3f4a0981b08d80b63f99d171ad3e5a01958164ffa3",
-      "bytes": 2763
+      "sha256": "53afb62e152ea7cbc591aa6c55f9beff59ce8e0e30d65012a5f08b6963ae1378",
+      "bytes": 10664
     },
     {
       "path": "packages/hikae/src/l2-monitor.ts",
@@ -1997,8 +2067,8 @@
     },
     {
       "path": "packages/hikae/src/l3-gate.ts",
-      "sha256": "c23a4030bf5f8ce5dde6799dc360c32cfa954329d4c01bd6d1b7f61ca49d18ff",
-      "bytes": 8019
+      "sha256": "d9b5876da378680a6562ebac0e158c182776c07f858d170bb58343f9eb219385",
+      "bytes": 8796
     },
     {
       "path": "packages/hikae/src/liquidable-24h.ts",
@@ -2016,6 +2086,11 @@
       "bytes": 4418
     },
     {
+      "path": "packages/hikae/src/runs.ts",
+      "sha256": "b20b1b7aeba9305dbda78a7ebc817784f905a6f1185d22e26cfcb902c489072c",
+      "bytes": 4878
+    },
+    {
       "path": "packages/hikae/src/s2/instrument.ts",
       "sha256": "f78716f8c9a8778d76098390860efb065545b3552a967460e14997ad5db58c3e",
       "bytes": 19558
@@ -2031,14 +2106,34 @@
       "bytes": 5722
     },
     {
+      "path": "packages/hikae/src/scaled-band.ts",
+      "sha256": "11a18c351e9a36be2bacf55d051de6f6fb7ce29ad60e55eadd3a9976503b146a",
+      "bytes": 4694
+    },
+    {
       "path": "packages/hikae/src/tracker.ts",
       "sha256": "1d3677ad65a74250bf28bfe4ae20f64bc373841a8272b68fe82456db8b504d71",
       "bytes": 7617
     },
     {
       "path": "packages/hikae/src/verdict.ts",
-      "sha256": "7f2a5fe3fc99c5618797b3f7f98b6326620326abf0cf6e4628a8bb9a1763b801",
-      "bytes": 3454
+      "sha256": "242855cb44026e338927ea9e2dfdb0020a091ede32b0c68b5868aeade34b96e1",
+      "bytes": 3578
+    },
+    {
+      "path": "packages/hikae/test/binomial.test.ts",
+      "sha256": "14089c4dc1278b7919afdeb6da1c5a10cc092bc807e5e8963061b4fa644346a5",
+      "bytes": 15031
+    },
+    {
+      "path": "packages/hikae/test/cm3a-engine.test.ts",
+      "sha256": "a038a6064d698623520899f1133b0ec3539617e0a7d732222a287578917736cb",
+      "bytes": 16239
+    },
+    {
+      "path": "packages/hikae/test/cm3b-engine.test.ts",
+      "sha256": "89124df6f44285f98b7f5aa34e76409e1e4df3b02149f7b9d6f9aee8b97c0e18",
+      "bytes": 15098
     },
     {
       "path": "packages/hikae/test/contracts-integration.test.ts",
@@ -2067,8 +2162,8 @@
     },
     {
       "path": "packages/hikae/test/l1.test.ts",
-      "sha256": "198b71398ef0885092f6ce96e580231eca8a9ffed4d234d988c4153383751e86",
-      "bytes": 2835
+      "sha256": "11ccade9ca4f6c8deecf9847518c2482d87e05cd0679f641cc828d948e901ec6",
+      "bytes": 3077
     },
     {
       "path": "packages/hikae/test/l2.test.ts",
@@ -2081,9 +2176,34 @@
       "bytes": 4158
     },
     {
+      "path": "packages/hikae/test/oracle-l1-split.test.ts",
+      "sha256": "9c0cba36d156e02310ead539557b4f40fe0906f7b7b26cf5bc05d917dd178e3f",
+      "bytes": 8850
+    },
+    {
+      "path": "packages/hikae/test/oracle-l3-interval.test.ts",
+      "sha256": "71ddbe7c17e92cf25eb6fa93e777bddf257140085062622d1af15bd937010632",
+      "bytes": 9758
+    },
+    {
       "path": "packages/hikae/test/region-predictor.test.ts",
       "sha256": "7421b1f4e243882f92284806016b39044e0372fa044defaef64d757c0b6c00d2",
       "bytes": 3140
+    },
+    {
+      "path": "packages/hikae/test/risk-control-quantile.test.ts",
+      "sha256": "382bb8173e0bfff5c2786242a9dd31755a66d9d1ef598ae2c8ade986a0c7a42e",
+      "bytes": 15764
+    },
+    {
+      "path": "packages/hikae/test/runs.test.ts",
+      "sha256": "5b1c65cc0581b552b3739f67cdd25d4b8a115a00b74fb06721a5e4df86c03edb",
+      "bytes": 17349
+    },
+    {
+      "path": "packages/hikae/test/served-scores.ts",
+      "sha256": "609bd17736c6f99107953776fbbabd35f63fb123f5694ca74a8857e951531bd1",
+      "bytes": 12526
     },
     {
       "path": "packages/hikae/test/tracker.test.ts",
@@ -2552,13 +2672,13 @@
     },
     {
       "path": "skills/monark/DEMO.md",
-      "sha256": "c022c807f3393f76a68edcdba40e3a7781799866b8ed53c9bc2b662c22bbf71f",
-      "bytes": 5269
+      "sha256": "8f06917f793a62ae6498cb08aa36e56175dc8a31e357cf3ec7e4636204e0cf25",
+      "bytes": 5378
     },
     {
       "path": "skills/monark/INTEGRATION.md",
-      "sha256": "a5472ce3a37c190b88f5efdd06f656657679c886aaa528aa77f0ad56b50ec579",
-      "bytes": 2804
+      "sha256": "9b0a1afe4df6064819082111e8dc0a787e617e72f34dd9a2de6fe65c289cbd6f",
+      "bytes": 2963
     },
     {
       "path": "skills/monark/LICENSE",
@@ -2567,8 +2687,8 @@
     },
     {
       "path": "skills/monark/SKILL.md",
-      "sha256": "0ce50c04f69bf77532988650a48799ca591d14920bf5519f736af00de31f85c5",
-      "bytes": 5760
+      "sha256": "504a6cecd31d7464e2f61e8a8fab193ba430f4f5fb8043747e4db8c19b62cf8d",
+      "bytes": 5951
     },
     {
       "path": "tsconfig.json",
