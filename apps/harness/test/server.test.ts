@@ -4,13 +4,15 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { request as httpRequest } from "node:http";
+import { request as httpRequest, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createRequire } from "node:module";
 import { assertClosedPrediction } from "@monark/contracts";
 import { HOST, PORT, originGuard, startServer, MAX_REQUEST_BODY_BYTES } from "../src/server.ts";
 import { HARNESS_VERSION } from "../src/version.ts";
 import { buildOpenApi } from "../src/openapi.ts";
+import { HARNESS_TOOLS } from "../src/tools/registry.ts";
 import { startLoopback } from "./helpers/loopback.ts";
 
 /**
@@ -35,6 +37,11 @@ function wiredPost(port: number, host: string, path: string, body: string, accep
     req.end();
   });
 }
+
+/** The non-allowlisted Origin of the wired (a2) case. */
+const EVIL = "https://evil.example.com";
+/** The errors by which a client loses a response the server did send: a reset of the connection (EXPORT-HARNESS-413-LOAD-1). */
+const RESET = new Set(["ECONNRESET", "EPIPE", "ECONNABORTED"]);
 
 function guard(origin: string | null): Response | undefined {
   const headers: Record<string, string> = {};
@@ -121,20 +128,44 @@ test("oversized_body_413_and_normal_tools_call_unaffected", async () => {
     // bad-Origin request carrying an OVERSIZED body gets 403 (the guard fired on the header), NOT 413
     // (which would mean the bounded reader ran first, buffering a body from a rejected origin). Killing
     // mutant: move `originGuard` below `readBodyBounded` in `handleNodeRequest` ⇒ this flips 403→413 ⇒ red.
-    const badOriginOversized = await new Promise<number>((resolve) => {
+    // The verdict rests on what the SERVER sent, seen on its own `request` event (EXPORT-HARNESS-413-LOAD-1): the 403, with the
+    // body not read in full (`req.complete` false proves only that: the guard answered before the whole body was consumed; a
+    // reader that buffers the whole body first reds here). The client must see that 403, or a reset: the server closes a socket that still holds
+    // unread body bytes, so the OS answers the rest with RST, and win32 drops a received but unread 403 when the RST lands
+    // first (Linux keeps it): the red of the exported CI on win32 under load (65 ms). Any other status or error stays red.
+    // A server that drops the socket without finishing a response must red on a named assertion, not hang to the runner timeout
+    // (G2 C-1): `close` gives the fast verdict, and the wait for `sent` is capped once the client has its outcome.
+    const sent = new Promise<{ status: number; complete: boolean } | string>((resolve) => {
+      const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
+        if (req.headers.origin !== EVIL) return;
+        server.off("request", onRequest);
+        res.once("finish", () => { resolve({ status: res.statusCode, complete: req.complete }); });
+        res.once("close", () => { resolve("closed the response without finishing it"); });
+      };
+      server.on("request", onRequest);
+    });
+    const seen = await new Promise<number | string>((resolve) => {
       const body = "a".repeat(MAX_REQUEST_BODY_BYTES + 1);
       let done = false;
-      const finish = (code: number): void => { if (!done) { done = true; resolve(code); } };
+      const finish = (outcome: number | string): void => { if (!done) { done = true; resolve(outcome); } };
       const req = httpRequest(
         { hostname: "127.0.0.1", port, path: "/", method: "POST",
-          headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body), origin: "https://evil.example.com", host: "mcp.monarkgate.tech" } },
+          headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body), origin: EVIL, host: "mcp.monarkgate.tech" } },
         (res) => { res.resume(); finish(res.statusCode ?? 0); },
       );
-      req.on("error", () => { finish(0); });
+      req.on("error", (e: NodeJS.ErrnoException) => { finish(e.code ?? e.message); });
       req.write(body);
       req.end();
     });
-    assert.equal(badOriginOversized, 403, "bad-Origin + oversized body ⇒ 403 (guard runs header-first, before the body is read), NOT 413");
+    let cap: NodeJS.Timeout | undefined;
+    const served = await Promise.race([sent, new Promise<string>((resolve) => {
+      cap = setTimeout(() => { resolve("finished no response within 10 s"); }, 10_000);
+    })]);
+    clearTimeout(cap);
+    if (typeof served === "string") assert.fail(`bad-Origin + oversized body: the server ${served} (it must finish its 403)`);
+    assert.deepEqual(served, { status: 403, complete: false }, "bad-Origin + oversized body ⇒ the server sent 403 before reading the body (guard runs header-first), NOT 413");
+    if (typeof seen === "number") assert.equal(seen, 403, "bad-Origin + oversized body ⇒ 403 (guard runs header-first, before the body is read), NOT 413");
+    else assert.ok(RESET.has(seen), `the client may lose the 403 only to a reset of the unread body (win32), not to ${seen}`);
 
     // (b) positive control — a body EXACTLY at the cap is NOT capped (kills a `>=`-for-`>` mutant). The MCP
     // handler rejects this garbage payload some OTHER way, but never with 413.
@@ -268,4 +299,85 @@ test("harness_server_drain_leaves_no_server_handle", async () => {
     kinds = process.getActiveResourcesInfo();
   }
   assert.equal(kinds.includes("TCPServerWrap"), false, `the server handle must clear after closeAllConnections()+close() (a leak never does); saw [${kinds.join(",")}]`);
+});
+
+// TRANSPORT-500-SCHEMA-1 (N-4 of the G2 of C' 3c-4a): every 500 the server can send validates the 500 schema that /openapi.json
+// publishes (the same for the four operations, compiled by Ajv 2020 in strict mode), over the wire: the two 500 of an operation
+// (output outside its schema, the tool threw) and the transport-level 500 of server.ts, thrown around the mirror (POST /calibrate)
+// or before routing (an unparseable Host), whose body is exactly {"error":"internal_error"}. The schema stays closed.
+// killer: apps/harness/src/schema-projection.ts:200 CONST "[internal, transport]" -> "[internal]"
+test("every_500_of_the_server_validates_the_published_500_schema", async () => {
+  type Rec = Record<string, unknown>;
+  const at = (node: unknown, ...keys: string[]): unknown => keys.reduce<unknown>((n, k) => (n as Rec | undefined)?.[k], node);
+  const spec = buildOpenApi(), ops = Object.keys(at(spec, "paths") as Rec);
+  const schemas = ops.map((p) => at(spec, "paths", p, "post", "responses", "500", "content", "application/json", "schema"));
+  assert.ok(ops.length === 4 && schemas.every((x) => JSON.stringify(x) === JSON.stringify(schemas[0])), "one 500 schema for the four operations");
+  const Ajv = (createRequire(import.meta.url)("ajv/dist/2020.js") as { default: new (o: object) => { compile: (s: unknown) => (v: unknown) => boolean } }).default;
+  const valid = new Ajv({ strict: true }).compile(schemas[0]);
+  assert.deepEqual([{ error: "internal_error", operation: "" }, { error: "internal_error", x: 1 }, { error: "tool_error" }].map(valid), [false, false, false], "the 500 schema stays closed");
+  const tool = HARNESS_TOOLS.find((t) => t.name === "calibrate");
+  assert.ok(tool !== undefined, "the calibrate tool is registered");
+  const mutable = tool as { run: typeof tool.run }, original = tool.run;
+  const server = await startLoopback((port) => startServer(port));
+  try {
+    const addr = server.address();
+    assert.ok(addr !== null && typeof addr === "object", "address() must be an AddressInfo");
+    const body = JSON.stringify({ scores: [0.1, 0.2, 0.3], alpha: 0.5, nMin: 3 });
+    const cases: [string, typeof tool.run, string, string | null][] = [
+      ["output_invalid", () => ({ text: "x", structured: { rogue: true } }), "api.monarkgate.tech", "calibrate"],
+      ["the tool threw", () => { throw new Error("boom"); }, "api.monarkgate.tech", "calibrate"],
+      ["transport, around the mirror", () => ({ text: "x", get structured(): never { throw new Error("transport"); } }), "api.monarkgate.tech", null],
+      ["transport, before routing", original, "bad host", null],
+    ];
+    for (const [name, run, host, operation] of cases) {
+      mutable.run = run;
+      const res = await wiredPost(addr.port, host, "/calibrate", body, "application/json");
+      const json = JSON.parse(res.raw) as Rec;
+      assert.equal(res.status, 500, `${name}: a 500`);
+      assert.equal(json["operation"] ?? null, operation, `${name}: the operation named, or none (transport)`);
+      if (operation === null) assert.equal(res.raw, JSON.stringify({ error: "internal_error" }), `${name}: the transport-level body`);
+      assert.ok(valid(json), `${name}: the 500 body validates the published 500 schema: ${res.raw}`);
+    }
+  } finally {
+    mutable.run = original;
+    server.closeAllConnections();
+    await new Promise<void>((resolve) => { server.close(() => { resolve(); }); });
+  }
+});
+
+// TRANSPORT-500-SCHEMA-1, fold of its review (R-1): every status the server can answer on a described operation is listed by
+// /openapi.json, and nothing else: 200, 400 (not JSON), 403 (an Origin outside monarkgate.tech), 413 (a body one byte over the
+// cap, read in full so no reset races the answer) and 500 (the tool threw). The 404 and 405 of undescribed paths and methods
+// are out of scope. The same list for the four operations.
+// killer: apps/harness/src/openapi.ts:91 SDL "\"413\": {" -> ""
+test("every_status_of_a_described_operation_is_listed_by_openapi", async () => {
+  const spec = buildOpenApi() as { paths: Record<string, { post: { responses: Record<string, unknown> } }> };
+  const listed = Object.values(spec.paths).map((p) => Object.keys(p.post.responses).sort().join(","));
+  assert.ok(listed.length === 4 && listed.every((l) => l === listed[0]), `one status list for the four operations: ${listed.join(" | ")}`);
+  const tool = HARNESS_TOOLS.find((t) => t.name === "calibrate");
+  assert.ok(tool !== undefined, "the calibrate tool is registered");
+  const mutable = tool as { run: typeof tool.run }, original = tool.run;
+  const server = await startLoopback((port) => startServer(port));
+  try {
+    const addr = server.address();
+    assert.ok(addr !== null && typeof addr === "object", "address() must be an AddressInfo");
+    const send = (body: string, headers: Record<string, string> = {}): Promise<number> => new Promise((resolve, reject) => {
+      const req = httpRequest({ hostname: "127.0.0.1", port: addr.port, path: "/calibrate", method: "POST", headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body), host: "api.monarkgate.tech", ...headers } }, (res) => {
+        res.resume();
+        res.on("end", () => { resolve(res.statusCode ?? 0); });
+      });
+      req.on("error", reject);
+      req.end(body);
+    });
+    const ok = JSON.stringify({ scores: [0.1, 0.2, 0.3], alpha: 0.5, nMin: 3 });
+    const sent = [await send(ok), await send("{"), await send(ok, { origin: EVIL }), await send("a".repeat(MAX_REQUEST_BODY_BYTES + 1))];
+    mutable.run = () => { throw new Error("boom"); };
+    sent.push(await send(ok));
+    assert.deepEqual(sent, [200, 400, 403, 413, 500], "each status is reached on the wire");
+    assert.deepEqual(sent.map(String).sort().join(","), listed[0], "/openapi.json lists exactly the statuses the server answers on a described operation");
+  } finally {
+    mutable.run = original;
+    server.closeAllConnections();
+    await new Promise<void>((resolve) => { server.close(() => { resolve(); }); });
+  }
 });

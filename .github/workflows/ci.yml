@@ -1,4 +1,4 @@
-# Derived by scripts/export-public.mjs from the internal workflow (ADR-M004 D7 bis): lot-size gate removed, push trigger added.
+# Derived by scripts/export-public.mjs from the internal workflow (ADR-M004 D7 bis): lot-size gate and source-only export test job removed, push trigger added.
 # MONARK — CI gates (instantiated from an internal CI template;
 # concrete tools fixed by ADR-M003 D9 and its dated addenda).
 # Invariant (not parameterisable): EVERY job is BLOCKING and UNCONDITIONAL. No `continue-on-error` and no
@@ -18,9 +18,10 @@ on:
   push:
   pull_request:
 
-# Least-privilege GITHUB_TOKEN (ADR-CODEQL-ALERTS-1 D1; CodeQL actions/missing-workflow-permissions): every job reads
-# the repository contents and nothing more. Widening it, here or per job, is an ADR decision; the root test
-# ci_workflow_declares_least_privilege_permissions pins this block (one block, after on:, no write scope).
+# Least-privilege GITHUB_TOKEN (ADR-CODEQL-ALERTS-1 D1; CodeQL actions/missing-workflow-permissions): this block gives
+# every job read access to the repository contents and nothing more; a job reads more only through its own job-level
+# block, which only the dated lines under D1 admit. Any other widening, here or per job, is an ADR decision; the root
+# test ci_workflow_declares_least_privilege_permissions pins this block and admits no write scope.
 permissions:
   contents: read
 
@@ -39,7 +40,9 @@ jobs:
 
   g3-verification:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Re-measured 2026-10-04 (same rule: wall-time x3, capped <= 20): green run of PR 125 took 7 min 06 s; PRs 121,
+    # 126 and 112 were cancelled at the former bound 10 with tests still passing (no hang in the log of 126).
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,7 +56,7 @@ jobs:
       - name: Install (lockfile must be present and consistent)
         run: npm ci
       - name: Vocabulary gate + strict typecheck + tests (contracts_frozen, fixtures, tests 1-41)
-        run: npm run gate:vocab && npm run typecheck && npm test
+        run: npm run gate:vocab && npm run typecheck && npm run test:main
 
   g4-architecture:
     runs-on: ubuntu-latest
