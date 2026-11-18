@@ -1867,7 +1867,7 @@
     },
     {
       "path": "apps/site/package.json",
-      "sha256": "63d1d2d154c89e06bcb5e37709d24f6246dfff863fb62e15749d25cfc4c08aa9",
+      "sha256": "60c354a55b7d3d2c0e4592bfaf433b81d109431e6285374ca535ec7eac9bea18",
       "bytes": 842
     },
     {
@@ -2227,7 +2227,7 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "3bb9c16bbb01651f5556165bf5ba2b4ab2d33daf7d4a1b2f89ae530cb2c8ddbe",
+      "sha256": "19d774036e89ffa13b13c718e829497c01882b50e6216fddb71105a63279ebaa",
       "bytes": 182031
     },
     {
