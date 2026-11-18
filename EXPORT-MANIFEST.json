@@ -2,8 +2,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "a9d3ac67b85c4fbea5fb06e69a5270e7c7a04277a9570fa639dd6af2e4e20f3f",
-      "bytes": 10552
+      "sha256": "2de9d26b92b9fe973a04be6c289f6c4df9e59c29e011229bcf63d4f6de41a3df",
+      "bytes": 10973
     },
     {
       "path": "CONTRIBUTING.md",
@@ -3121,6 +3121,21 @@
       "bytes": 59957
     },
     {
+      "path": "scripts/audit-exceptions.json",
+      "sha256": "cb4a3a76f1d68311eca65a8786487bd5bd869e21e27046405a8b5a6bca2d0cba",
+      "bytes": 378
+    },
+    {
+      "path": "scripts/audit-gate.d.mts",
+      "sha256": "5e3002a5e228eb3da211035e2421165dd3ea8a90d5cc7757096ae4bba6e2501c",
+      "bytes": 2994
+    },
+    {
+      "path": "scripts/audit-gate.mjs",
+      "sha256": "1707709f510bfb4a1dbf6e1d79578ab77b336e7e6d59bae5dc973d6537e5e6cb",
+      "bytes": 14114
+    },
+    {
       "path": "scripts/export-public.mjs",
       "sha256": "b5d21a080703c257975ba31d0bddedf2e13e9ad5a9d65a8b5b6ad55e8f4b1502",
       "bytes": 41880
@@ -3199,6 +3214,11 @@
       "path": "skills/monark/SKILL.md",
       "sha256": "63f52be6a3a6243bab45409fc19d05d88afbed1dfe9236c182501f811e057c8c",
       "bytes": 6468
+    },
+    {
+      "path": "test/audit-gate.test.ts",
+      "sha256": "a905284293da4ef99d3ae8aebf153632a10b730d7aa2fe1441633c0ee926f88f",
+      "bytes": 19922
     },
     {
       "path": "test/helpers/blocking-stdout.cjs",

@@ -94,8 +94,12 @@ jobs:
           name: sbom-cyclonedx
           path: sbom.cdx.json
           if-no-files-found: error
-      - name: Dependency audit (high and above = failure)
-        run: npm audit --audit-level=high
+      # npm audit --json, judged by scripts/audit-gate.mjs: an advisory of severity high or critical fails the job,
+      # except one named in scripts/audit-exceptions.json. An exception is pinned to the installed version of its
+      # package, the advisory's severity and vulnerable range, and the latest published version; it lapses when one of
+      # them changes.
+      - name: Dependency audit (high and above = failure, named exceptions in scripts/audit-exceptions.json)
+        run: node scripts/audit-gate.mjs
 
   g3-site:
     runs-on: ubuntu-latest

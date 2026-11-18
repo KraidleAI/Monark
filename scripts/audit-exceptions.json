@@ -1,0 +1,12 @@
+[
+  {
+    "advisory": "GHSA-fc5q-39xc-vjpf",
+    "package": "picomatch",
+    "version": "4.0.7",
+    "severity": "high",
+    "range": "<=4.0.7",
+    "latest": "4.0.7",
+    "added": "2026-11-18",
+    "reason": "No fixed version of picomatch is published. A development dependency only, reached through the lint tooling: typescript-eslint 8.69.0, then tinyglobby and fdir."
+  }
+]
