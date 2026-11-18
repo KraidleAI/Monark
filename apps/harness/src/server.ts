@@ -1,25 +1,29 @@
 /**
- * Harness — stateless MCP server + HTTP/JSON mirror (ADR-M005 D1/D6/D7).
+ * Harness — stateless MCP server + HTTP/JSON mirror.
  *
  * Transport: MCP Streamable HTTP via `createMcpHandler` (SDK v2). The factory returns a FRESH
- * `McpServer` per request — that IS the stateless model (D6): no session, no persisted budget; B_t
- * is caller-carried in and out. `keepAliveMs = 15000` (D7).
+ * `McpServer` per request — that IS the stateless model: no session, no persisted budget; B_t
+ * is caller-carried in and out. `keepAliveMs = 15000`.
  *
  * TWO surfaces on the ONE `127.0.0.1:3001` listener, routed by Host (Caddy fronts both sub-domains ->
- * this port, D7/D10): `mcp.monarkgate.tech` -> the MCP handler (below); `api.monarkgate.tech` -> the
- * HTTP/JSON mirror (`./http.ts`), a byte-faithful JSON mirror of the same four tools / frozen schemas.
+ * this port): `mcp.monarkgate.tech` -> the MCP handler (below); `api.monarkgate.tech` -> the
+ * HTTP/JSON mirror (`./http.ts`), a byte-faithful JSON mirror of the same five tools / frozen schemas.
  * Host validation is OPT-IN in the SDK via `enableDnsRebindingProtection` — it defaults to `false`
  * (`@modelcontextprotocol/server@2.0.0/dist/index.mjs:333`) and `validateRequestHeaders` returns early
  * when it is disabled (`:390`); the harness does not enable it, so the SDK performs NO Host check. Passing
  * the public Host through Caddy is therefore safe; routing keys on the request URL's hostname, not the
  * (fetch-forbidden) Host header. The Origin guard runs on BOTH surfaces, before dispatch.
  *
- * Origin (K-9/C-1): a PRESENT-and-invalid Origin ⇒ `403`; an ABSENT Origin ⇒ ACCEPTED (non-browser
+ * Origin: a PRESENT-and-invalid Origin ⇒ `403`; an ABSENT Origin ⇒ ACCEPTED (non-browser
  * MCP clients send none). Built on the SDK's `validateOriginHeader` (parse + deny-on-failure), with a
- * subdomain wrapper for `monarkgate.tech` + sub-domains. Bind: `127.0.0.1:3001` only (K-8/C-10).
+ * subdomain wrapper for `monarkgate.tech` + sub-domains. Bind: `127.0.0.1:3001` only.
  *
  * Importing this module is SIDE-EFFECT-FREE: the listener starts only under the run-guard (direct
  * `node src/server.ts`), never on import — the tests import `HOST`/`originGuard`/`startServer` freely.
+ *
+ * Genkan's kernel: `startServer` hands the tools the runner of the built kernel (`runKernel`,
+ * ./kernel.ts) unless it is given another; `createHarnessHandler` and `handleJsonMirror` run the tools with the runner they are
+ * given, and with none `judge` denies every order `unavailable`.
  */
 import { createServer, type IncomingMessage, type ServerResponse, type Server as HttpServer } from "node:http";
 import { Readable } from "node:stream";
@@ -28,10 +32,12 @@ import { fileURLToPath } from "node:url";
 import { createMcpHandler, McpServer, validateOriginHeader } from "@modelcontextprotocol/server";
 import type { McpHttpHandler } from "@modelcontextprotocol/server";
 import { registerTools } from "./tools/registry.ts";
+import type { KernelRunner } from "./tools/judge.ts";
+import { runKernel } from "./kernel.ts";
 import { handleJsonMirror } from "./http.ts";
 import { HARNESS_VERSION } from "./version.ts";
 
-/** Bind host — localhost ONLY (K-8/C-10). Never `0.0.0.0`. */
+/** Bind host — localhost ONLY. Never `0.0.0.0`. */
 export const HOST = "127.0.0.1";
 export const PORT = 3001;
 export const KEEP_ALIVE_MS = 15000;
@@ -42,17 +48,17 @@ export const KEEP_ALIVE_MS = 15000;
  * and the harness still fail-closes if a request reaches the loopback listener directly (Caddy bypassed).
  */
 export const MAX_REQUEST_BODY_BYTES = 512 * 1024;
-/** MCP server name — the fleet name `monark`, never a caller/agent brand (R-P1 Q4). */
+/** MCP server name — the fleet name `monark`, never a caller/agent brand. */
 export const SERVER_NAME = "monark";
 
-/** Origin allowlist apex; `monarkgate.tech` and its sub-domains are accepted (K-9/C-1). */
+/** Origin allowlist apex; `monarkgate.tech` and its sub-domains are accepted. */
 export const ORIGIN_APEX = "monarkgate.tech";
 
 /** Host prefix that selects the HTTP/JSON mirror surface (`api.` -> JSON); `mcp.`/anything else -> MCP. */
 export const API_HOST_PREFIX = "api.";
 
 /**
- * Route selection (D7/D10): the JSON mirror serves requests whose Host is the `api.` sub-domain; the MCP
+ * Route selection: the JSON mirror serves requests whose Host is the `api.` sub-domain; the MCP
  * handler serves `mcp.` and everything else (incl. a direct `127.0.0.1` dev call). Keys on the URL's
  * hostname — `toWebRequest` builds the URL from the Node `Host` header, and `Host` is a forbidden fetch
  * header so `request.headers.get("host")` is unreliable, but the URL always carries it.
@@ -62,7 +68,7 @@ export function isJsonMirrorHost(request: Request): boolean {
 }
 
 /**
- * K-9/C-1 Origin decision. Absent/empty ⇒ accepted; malformed ⇒ rejected; apex or a sub-domain of the
+ * Origin decision. Absent/empty ⇒ accepted; malformed ⇒ rejected; apex or a sub-domain of the
  * apex ⇒ accepted; any other present hostname ⇒ rejected. Parsing/deny-on-failure delegate to the
  * SDK's `validateOriginHeader`; the sub-domain suffix is layered on top.
  */
@@ -85,13 +91,14 @@ export function originGuard(request: Request): Response | undefined {
   });
 }
 
-/** The stateless MCP handler: a fresh `McpServer` with the tools registered, per request (D6). `clock` is the
- *  current instant handed to the tools (ADR-CM B-4: `produced_at` not in the future); read here in src/ (K-8). */
-export function createHarnessHandler(clock: () => number = Date.now): McpHttpHandler {
+/** The stateless MCP handler: a fresh `McpServer` with the tools registered, per request. `clock` is the
+ *  current instant handed to the tools (`produced_at` not in the future); read here in src/. `kernel` is
+ *  the runner of Genkan's kernel handed to `judge`; absent, `judge` denies every order `unavailable`. */
+export function createHarnessHandler(clock: () => number = Date.now, kernel?: KernelRunner): McpHttpHandler {
   return createMcpHandler(
     () => {
       const server = new McpServer({ name: SERVER_NAME, version: HARNESS_VERSION });
-      registerTools(server, clock);
+      registerTools(server, clock, kernel);
       return server;
     },
     { keepAliveMs: KEEP_ALIVE_MS },
@@ -136,10 +143,10 @@ async function readBodyBounded(req: IncomingMessage, limit: number): Promise<Uin
   return new Uint8Array(Buffer.concat(chunks));
 }
 
-async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, handler: McpHttpHandler): Promise<void> {
+async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, handler: McpHttpHandler, clock: () => number = Date.now, kernel?: KernelRunner): Promise<void> {
   try {
     const method = req.method ?? "GET";
-    // K-9 Origin guard runs FIRST (both surfaces), on a HEADER-ONLY request: a present-and-invalid Origin
+    // The Origin guard runs FIRST (both surfaces), on a HEADER-ONLY request: a present-and-invalid Origin
     // is refused with 403 BEFORE the body is read, so a bad-origin oversized body is never buffered.
     const rejected = originGuard(toWebRequest(req, undefined));
     if (rejected !== undefined) {
@@ -162,8 +169,8 @@ async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, hand
       body = read;
     }
     const request = toWebRequest(req, body);
-    const response = isJsonMirrorHost(request) ? await handleJsonMirror(request) : await handler.fetch(request);
-    res.writeHead(response.status, Object.fromEntries(response.headers));
+    const response = isJsonMirrorHost(request) ? await handleJsonMirror(request, clock, kernel) : await handler.fetch(request);
+    res.writeHead(response.status, { date: new Date(clock()).toUTCString(), ...Object.fromEntries(response.headers) }); // Date: the clock the tools see
     if (response.body !== null) {
       Readable.fromWeb(response.body).pipe(res);
     } else {
@@ -178,12 +185,13 @@ async function handleNodeRequest(req: IncomingMessage, res: ServerResponse, hand
 /**
  * Start the HTTP listener on `host:port` (defaults: `127.0.0.1:3001`). Returns the `http.Server` so a
  * caller (or a test) can read `server.address()` and close it. The default host is the security
- * property under test (`harness_binds_localhost_only`): a caller that overrides it does not defeat it.
+ * property under test (`harness_binds_localhost_only`): a caller that overrides it does not defeat it. `kernel` is the runner
+ * of Genkan's kernel handed to both surfaces: by default the built kernel (`runKernel`, ./kernel.ts).
  */
-export function startServer(port: number = PORT, host: string = HOST): HttpServer {
-  const handler = createHarnessHandler();
+export function startServer(port: number = PORT, host: string = HOST, clock: () => number = Date.now, kernel: KernelRunner = runKernel): HttpServer {
+  const handler = createHarnessHandler(clock, kernel);
   const server = createServer((req, res) => {
-    void handleNodeRequest(req, res, handler);
+    void handleNodeRequest(req, res, handler, clock, kernel);
   });
   server.listen(port, host);
   return server;

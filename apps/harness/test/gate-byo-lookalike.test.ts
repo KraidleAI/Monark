@@ -1,6 +1,5 @@
 /**
- * Harness - BYO look-alike guard (chantier moteur, lot CM-1, BYO-NEAR-NAME-1, audit P3 point S-11).
- * Oracle: docs/adr/ADR-CM-chantier-moteur-audit-P3.md §5 B-1; plan docs/G0-lot-cm-1-byo-near-name.md.
+ * Harness - BYO look-alike guard.
  * A BYO calibration must never run under a name that imitates a committed class or key (ASCII case, leading
  * or trailing blank, checksum-case address), nor under the reserved kata class pattern or the `kata:` key
  * prefix. Each test names its killer on the line above it.
@@ -44,20 +43,28 @@ function decided(p: Prediction, cal: NonNullable<HarnessParams["calibration"]>, 
   }
 }
 
-/** The codes of the B-1 rule. A name B-1 refuses keeps a B-1 code and message: the B-10 guard (CM-2c) runs after it. */
+/** The look-alike guard's codes. A name it refuses keeps its code and message: the confusable guard runs after it. */
 const B1_CODES: readonly unknown[] = ["byo_edge_blank", "byo_lookalike_committed", "byo_reserved_kata"];
+
+/** The look-alike guard's exact message per code, as the gate writes it for the call's (task_class, predictor_id). */
+function b1Message(code: unknown, p: Prediction): string {
+  const [c, k] = [p.task_class, p.predictor_id];
+  if (code === "byo_edge_blank") return `byo task_class and predictor_id must not start or end with a blank: ${JSON.stringify(c)} / ${JSON.stringify(k)}`;
+  if (code === "byo_lookalike_committed") return `calibration must not override the committed (task_class, predictor_id) '${c}' / '${k}', compared without ASCII case: use a caller-owned key for BYO`;
+  return `task_class '${c}' / predictor_id '${k}' takes a name reserved for MONARK kata classes (pattern ^[a-z0-9]{2,10}-(dir|range|mae-down|mae-up)-(15m|1h|4h|24h)$, key prefix 'kata:'): use a caller-owned name for BYO`;
+}
 
 function refused(p: Prediction, cal: NonNullable<HarnessParams["calibration"]>, at: string): void {
   assert.throws(
     () => runGate(p, { ...PARAMS, calibration: cal }),
-    (e: unknown) => e instanceof HarnessToolError && B1_CODES.includes(e.code) && /\(ADR-CM B-1[,)]/.test(e.message),
-    `${at}: a look-alike BYO must be a named tool error (400) with a B-1 code and message, not a later guard's`,
+    (e: unknown) => e instanceof HarnessToolError && B1_CODES.includes(e.code) && e.message === b1Message(e.code, p),
+    `${at}: a look-alike BYO must be a named tool error (400) with a look-alike guard code and message, not a later guard's`,
   );
 }
 
-// Test T-1 (F2P): the eight look-alike names of MONARK's probe (status of audit P3, priority 1), plus a case variant
-// of the stable-run class with the committed key, are refused.
-// killer: apps/harness/src/tools/gate.ts:828 CONST "asciiLower(taskClass)" -> "taskClass"
+// Test T-1 (F2P): the eight look-alike names of MONARK's probe, plus a case variant of the stable-run class with the
+// committed key, are refused.
+// killer: apps/harness/src/tools/gate.ts:809 CONST "asciiLower(taskClass)" -> "taskClass"
 test("byo_lookalike_probe_names_refused", () => {
   const set: [string, string][] = [
     ["BTC-DIR-15M", "caller:model"],
@@ -90,13 +97,13 @@ test("byo_lookalike_probe_names_refused", () => {
     (e: unknown) =>
       e instanceof HarnessToolError &&
       e.message ===
-        "calibration must not override the committed (task_class, predictor_id) 'btc-dir-15m' / 'caller:model': use a caller-owned key for BYO (ADR-M007 D7, ADR-M008 A6)",
+        "calibration must not override the committed (task_class, predictor_id) 'btc-dir-15m' / 'caller:model': use a caller-owned key for BYO",
     "the exact committed name keeps its message byte for byte",
   );
 });
 
 // Test T-1b (F2P): a case variant of the liq class, committed on the CLASS, is refused for any key.
-// killer: apps/harness/src/tools/gate.ts:779 CONST "TASK_CASCADE, TASK_LIQ_ELIGIBLE" -> "TASK_CASCADE"
+// killer: apps/harness/src/tools/gate.ts:760 CONST "TASK_CASCADE, TASK_LIQ_ELIGIBLE" -> "TASK_CASCADE"
 test("byo_lookalike_liq_class_case_refused", () => {
   refused(pred("Liquidation-Eligible-Coverage", "caller:model", "A"), SET_CAL, "liq class, other case");
   refused(pred("LIQUIDATION-ELIGIBLE-COVERAGE", "caller:other", 1), INTERVAL_CAL, "liq class, upper case");
@@ -105,7 +112,7 @@ test("byo_lookalike_liq_class_case_refused", () => {
 // Test T-2 (F2P): a leading or trailing blank (space, tab, no-break space) on the class or on the key is refused
 // on the BYO path, for any name (tab and no-break space reach the guard on a direct runGate call only: the
 // frozen schema refuses them at the served boundary).
-// killer: apps/harness/src/tools/gate.ts:825 CONST "EDGE_BLANK.test(predictorId)" -> "false"
+// killer: apps/harness/src/tools/gate.ts:806 CONST "EDGE_BLANK.test(predictorId)" -> "false"
 test("byo_edge_blank_refused", () => {
   for (const blank of [" ", "\t", "\u00a0"]) {
     refused(pred(`acme-model-x${blank}`, "caller:model", "A"), SET_CAL, `class trailing ${JSON.stringify(blank)}`);
@@ -116,7 +123,7 @@ test("byo_edge_blank_refused", () => {
 });
 
 // Test T-3 (F2P): the kata class pattern is reserved against BYO, in any ASCII case; near names are not.
-// killer: apps/harness/src/tools/gate.ts:833 CONST "KATA_CLASS_RE.test(cls)" -> "false"
+// killer: apps/harness/src/tools/gate.ts:814 CONST "KATA_CLASS_RE.test(cls)" -> "false"
 test("byo_kata_class_names_reserved", () => {
   for (const cls of ["btc-dir-1h", "ETH-RANGE-4H", "sol-mae-down-1h", "Bnb-Mae-Up-4h"]) {
     refused(pred(cls, "caller:model", "A"), SET_CAL, `kata class ${cls}`);
@@ -129,7 +136,7 @@ test("byo_kata_class_names_reserved", () => {
 });
 
 // Test T-3b (F2P): the `kata:` key prefix is reserved against BYO, in any ASCII case; near keys are not.
-// killer: apps/harness/src/tools/gate.ts:833 CONST "key.startsWith(KATA_KEY_PREFIX)" -> "false"
+// killer: apps/harness/src/tools/gate.ts:814 CONST "key.startsWith(KATA_KEY_PREFIX)" -> "false"
 test("byo_kata_key_prefix_reserved", () => {
   for (const key of ["kata:vote4-v1@binance/BTCUSDT/1h/up-b3", "KATA:anything", "KaTa:x"]) {
     refused(pred("acme-model-x", key, "A"), SET_CAL, `kata key ${key}`);

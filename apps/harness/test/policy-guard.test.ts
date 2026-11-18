@@ -1,7 +1,6 @@
 /**
- * Import guard of kata rows, wave 1, and the 32 kata class entries (lot CM-4a-ii-a, block B2; docs/G0-lot-cm-4a-ii.md;
- * A-2 section 2.2 and its killers, section 5), on the seeded synthetic registry of block B1, never on wave1.json. Each
- * test names its killer above it.
+ * Import guard of kata rows, wave 1, and the 32 kata class entries, on the seeded synthetic registry, never on
+ * wave1.json. Each test names its killer above it.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -11,7 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertClosedClassEntry, sha256Canonical, type ClassEntry, type PolicyRow, type PolicyTable } from "@monark/contracts";
 import { missUpperBound } from "@monark/hikae";
-import { kataClassEntries } from "../src/policy-classes.ts";
+import { kataClassEntries, kataKeyProblem } from "../src/policy-classes.ts";
 import { guardKataRow, guardKataTable, type GuardPins } from "../src/policy-guard.ts";
 import { projectCell, readRegistry } from "../src/policy-projection.ts";
 import { buildPolicyTable } from "../src/policy-table-file.ts";
@@ -30,7 +29,7 @@ const CLASSES = ENTRIES.map((e) => e.task_class);
 const ROWS = CLASSES.flatMap((name) => tableFrom(name, SYN.bytes, PINS).rows);
 const find = (f: (r: PolicyRow) => boolean): PolicyRow => ROWS.find(f) ?? assert.fail("no such row");
 const check = (r: PolicyRow, pins = PINS): void => guardKataRow(r, entry(r.task_class), pins);
-const refuse = (r: PolicyRow, re: RegExp, pins = PINS): void => assert.throws(() => check(r, pins), re);
+const refuse = (r: PolicyRow, re: RegExp, pins = PINS): void => { try { check(r, pins); } catch (e) { if (!(e instanceof Error && /^MONARK (import guard|policy check): /.test(e.message))) throw e; assert.match(String(e), re); return; } assert.fail(`admitted, not refused: ${String(re)}`); }; // a refusal by the guard or by the closed row check it runs first, matching re as assert.throws matched it; an admitted row fails by an assertion; any other error is thrown again, so a crash fails the test and is never read as a refusal
 const dirRegion = find((r) => r.side !== null && r.status === "region" && (r.misses ?? 0) > 0);
 const bandRegion = find((r) => r.side === null && r.status === "region");
 const dirMisses = find((r) => r.side !== null && r.status === "silence" && r.qhat === 1);
@@ -62,7 +61,7 @@ const reforged = (edit: (rows: Cell[]) => void): { bytes: Uint8Array; pins: Guar
   return { bytes, pins: { ...PINS, registrySha256: createHash("sha256").update(bytes).digest("hex") } };
 };
 
-// killer: apps/harness/src/policy-guard.ts:118 SDL "want(Object.keys(cell.test.months)" -> ""
+// killer: apps/harness/src/policy-guard.ts:124 SDL "want(Object.keys(cell.test.months)" -> ""
 test("guard_admits_every_synthetic_table", () => {
   for (const name of CLASSES) guardKataTable(tableFrom(name, SYN.bytes, PINS), SYN.bytes, PINS, entry(name));
   assert.deepEqual(new Set(ROWS.map((r) => r.status)), new Set(["region", "silence", "vetoed", "under_calib"]));
@@ -92,7 +91,7 @@ test("guard_refuses_arithmetic_off_the_counts", () => {
 
 // killer: apps/harness/src/policy-guard.ts:74 CONST "r.misses ?? -1" -> "r.k_obs ?? -1"
 test("guard_direction_qhat_and_misses", () => {
-  check(dirMisses);
+  assert.deepEqual(verdict(dirMisses), [dirMisses.status, dirMisses.status_reason]);
   assert.equal(dirMisses.k_obs, 0);
   refuse({ ...regionLike(dirMisses), qhat: 0 }, /qhat or k_obs/);
   refuse({ ...dirRegion, qhat: 1, k_obs: 0 }, /qhat or k_obs/);
@@ -102,7 +101,7 @@ test("guard_direction_qhat_and_misses", () => {
 // killer: apps/harness/src/policy-guard.ts:89 SDL "is(r.status === st && r.status_reason === why" -> ""
 test("guard_status_and_reason_recomputed", () => {
   for (const r of [dirMisses, vetoed, find((x) => x.status === "silence" && x.side === null)]) refuse(regionLike(r), /status/);
-  refuse({ ...dirMisses, miss_bound: "0.5000000", bound_on: "commit" }, /miss_bound and bound_on not both set on a region row/); // declared redundancy: block A refuses first (G2 m-5); the guard clause itself: guard_refuses_arithmetic_off_the_counts
+  refuse({ ...dirMisses, miss_bound: "0.5000000", bound_on: "commit" }, /miss_bound and bound_on not both set on a region row/); // declared redundancy: the contracts refuse first; the guard clause itself: guard_refuses_arithmetic_off_the_counts
   refuse({ ...dirMisses, status_reason: "dependence check rejects" }, /reason/);
   refuse({ ...under, status_reason: "empty bucket" }, /off under_calib/);
   for (const r of ROWS.filter((x) => x.status === "under_calib")) check(r);
@@ -110,11 +109,11 @@ test("guard_status_and_reason_recomputed", () => {
 
 // killer: apps/harness/src/policy-guard.ts:84 CONST "calib === \"region\"" -> "calib === \"silence\""
 test("guard_test_veto_conditional", () => {
-  check(vetoed);
+  assert.deepEqual(verdict(vetoed), [vetoed.status, vetoed.status_reason]);
   refuse({ ...vetoed, status: "region", status_reason: "" }, /status 'region'/);
   refuse({ ...vetoed, vetoes: { test: false, bridge: null, fwd: null } }, /vetoes\.test/);
   const n = dirMisses.test?.n_test ?? 0;
-  check({ ...dirMisses, test: { k_test: n, n_test: n, u_test: "1" } });
+  assert.deepEqual(verdict({ ...dirMisses, test: { k_test: n, n_test: n, u_test: "1" } }), [dirMisses.status, dirMisses.status_reason]);
   refuse({ ...dirRegion, test: { k_test: n, n_test: n, u_test: "1" } }, /vetoes\.test/);
   refuse({ ...dirRegion, test: { ...(dirRegion.test ?? assert.fail("no test")), u_test: "0.9999999" } }, /u_test/);
 });
@@ -130,14 +129,15 @@ test("guard_recompute_and_verifiers", () => {
   refuse({ ...under, recompute: rc }, /under_calib with a calibrated column/);
 });
 
-// killer: apps/harness/src/policy-guard.ts:108 ROR "?? 0) > 0" -> "?? 0) >= 0"
+// killer: apps/harness/src/policy-guard.ts:111 ROR "?? 0) > 0" -> "?? 0) >= 0"
+const BAND_EDGE = /^Error: MONARK import guard: \S+ \S+ has no positive band edge at calib_support\.min or no finite edge at calib_support\.max\.$/;
 test("guard_band_edges_and_support", () => {
   check(bandRegion);
   const b = (qhat: number, min: number, max: number): PolicyRow => ({ ...bandRegion, qhat, calib_support: { min, max } });
-  refuse(b(1e-300, 1e-30, 1e-29), /band edge/);
-  refuse(b(2 ** -1022, 1e-20, 1e-19), /band edge/);
+  refuse(b(1e-300, 1e-30, 1e-29), BAND_EDGE);
+  refuse(b(2 ** -1022, 1e-20, 1e-19), BAND_EDGE);
   refuse(b(2 ** -1074, 1e-3, 1e-2), /normal double/);
-  refuse(b(1e300, 1, 1e10), /band edge/);
+  refuse(b(1e300, 1, 1e10), BAND_EDGE);
   refuse(b(2, 0.02, 0.01), /min above max/);
   refuse({ ...dirRegion, qhat: -0 }, /qhat -0/);
 });
@@ -145,7 +145,7 @@ test("guard_band_edges_and_support", () => {
 // killer: apps/harness/src/policy-guard.ts:43 SDL "is(r.source.wave === 1" -> ""
 test("guard_wave_couplings_and_grammars", () => {
   const r = dirRegion;
-  refuse({ ...r, source: { ...r.source, wave: 2 } }, /wave 2 guard/);
+  refuse({ ...r, source: { ...r.source, wave: 2 } }, /^Error: MONARK import guard: \S+ \S+ has source\.wave 2: the wave 2 guard admits wave 2 core band rows only and the wave 2b band rows of the pinned wave3\.json, a null wave is a marginal row\.$/);
   refuse({ ...r, bridge: { k_test: 0, n_test: 1, u_test: null }, vetoes: { test: false, bridge: false, fwd: null } }, /wave 2 column/);
   refuse({ ...r, tail_frac: "0.95" }, /wave 2 column/);
   const values = [1, 2, 3, 4, 5, 6, 7];
@@ -165,7 +165,7 @@ test("guard_wave_couplings_and_grammars", () => {
   refuse({ ...retired("live:1", 100, 100, "1"), status_reason: "retired: live:2" }, /reason/);
 });
 
-// killer: apps/harness/src/server.ts:31 CONST "./http.ts" -> "./policy-guard.ts"
+// killer: apps/harness/src/server.ts:37 CONST "./http.ts" -> "./policy-guard.ts"
 test("guard_modules_are_not_served", () => {
   const src = join(dirname(fileURLToPath(import.meta.url)), "..", "src");
   const seen = new Set<string>();
@@ -176,7 +176,7 @@ test("guard_modules_are_not_served", () => {
   };
   for (const f of ["server.ts", "http.ts", "openapi.ts", "schema-projection.ts", ...readdirSync(join(src, "tools")).map((t) => `tools/${t}`)]) walk(join(src, f));
   assert.ok(seen.size > 6 && seen.has(join(src, "http.ts")));
-  // Block D (lot D-2): policy-classes.ts is served with the kata path; the import guard stays outside the served graph.
+  // policy-classes.ts is served with the kata path; the import guard stays outside the served graph.
   for (const f of ["policy-guard.ts"]) assert.ok(!seen.has(join(src, f)), f);
 });
 
@@ -188,7 +188,7 @@ test("guard_pins_order_time_and_current", () => {
 // killer: apps/harness/src/policy-guard.ts:67 SDL "is([t, r.bridge ?? t, r.fwd ?? t, r.retire ?? t].every(" -> ""
 test("guard_names_k_test_above_n_test", () => {
   const n = dirRegion.test?.n_test ?? 0;
-  refuse({ ...dirRegion, test: { k_test: n + 1, n_test: n, u_test: "1" } }, /k_test above its n_test/);
+  for (const b of [{ k_test: 1, n_test: 0, u_test: null }, { k_test: n + 1, n_test: n, u_test: "1" }]) refuse({ ...dirRegion, test: b }, /k_test above its n_test/); // n_test 0: no bound to compute, so without this clause the row is admitted
   refuse(retired("live:1", 101, 100, "1"), /k_test above its n_test/);
 });
 
@@ -198,13 +198,81 @@ test("guard_names_misses_above_n", () => {
   refuse({ ...s, misses: s.n + 3, k_obs: s.n + 3 }, /misses outside 0\.\.n/);
 });
 
-// killer: apps/harness/src/policy-guard.ts:101 SDL "is(pins.verifiers.every(" -> ""
+// killer: apps/harness/src/policy-guard.ts:102 SDL "is(pins.verifiers.every(" -> ""
 test("guard_requires_verifier_pins_as_identities", () => {
   for (const v of ["Verifier-B", "verifier-b@rev"]) refuse(dirRegion, /not an identity/, { ...PINS, verifiers: [v] });
 });
 
-// killer: apps/harness/src/policy-guard.ts:93 CONST "adr:decisions\\/[0-9A-Za-z]" -> "adr:[\\w./-]"
+// killer: apps/harness/src/policy-retire.ts:53 CONST "adr:decisions\\/[0-9A-Za-z]" -> "adr:[\\w./-]"
 test("guard_adr_cause_under_decisions_only", () => {
-  check(retired("adr:decisions/0007-retire.md", null, null, null));
+  assert.deepEqual(verdict(retired("adr:decisions/0007-retire.md", null, null, null)), ["retired", "retired: adr:decisions/0007-retire.md"]);
   for (const c of ["adr:/x.md", "adr:../../etc.md", "adr:..md", "adr:decisions/../x.md", "adr:other/x.md"]) refuse(retired(c, null, null, null), /retire cause/);
+});
+
+// reddened by: the digest clause of guardKataRow removed, so that the server admits a row the publication refuses
+// Kata and venue ca-probe are reserved for the probe key of the deployment check, so
+// no table can ever hold a row under it. The reservation is its own predicate, called by the import guard (and by the loader of
+// the committed tables, policy-committed.ts, served code: so it lives in policy-classes.ts, which the served graph imports,
+// not in policy-guard.ts),
+// never by the request check: kataKeyProblem still admits the probe key, so the probe call is answered.
+// killer: apps/harness/src/policy-classes.ts:53 CONST "[\"ca-probe\"]" -> "[\"ca-probe-x\"]"
+test("the_import_guard_refuses_the_reserved_probe_kata_and_venue", async () => {
+  const mod = (await import("../src/policy-classes.ts")) as unknown as { kataKeyReserved?: (kataId: string | null, venue: string | null) => boolean };
+  assert.equal(typeof mod.kataKeyReserved, "function", "policy-classes.ts exports kataKeyReserved, for the loader too: a served module (policy-guard.ts is not served)");
+  const as = (r: PolicyRow, kata: string, venue: string): PolicyRow => ({ ...r, kata_id: kata, venue, cell_key: `kata:${kata}@${venue}/${String(r.symbol)}/${String(r.horizon)}/${String(r.bucket)}` });
+  const [k, v] = [String(bandRegion.kata_id), String(bandRegion.venue)];
+  for (const [kata, venue] of [["ca-probe", v], [k, "ca-probe"], ["ca-probe", "ca-probe"]] as const) {
+    refuse(as(bandRegion, kata, venue), /has a kata or venue reserved for the deployment check \(ca-probe\)/);
+    refuse(as(dirRegion, kata, venue), /has a kata or venue reserved for the deployment check \(ca-probe\)/);
+  }
+  // One name, not a pattern: another kata passes the reservation and is refused further on (its trial_id no longer recomposes).
+  refuse(as(bandRegion, "ca-probe-2", v), /has a trial_id not recomposed/);
+  assert.deepEqual([mod.kataKeyReserved?.("ca-probe", v), mod.kataKeyReserved?.(k, "ca-probe"), mod.kataKeyReserved?.(k, v), mod.kataKeyReserved?.(null, null)], [true, true, false, false]);
+  assert.equal(kataKeyProblem("kata:ca-probe@ca-probe/BTCUSDT/1h", "btc-range-1h"), undefined, "the request check admits the probe key: the call is answered, never a 400");
+});
+
+// killer: apps/harness/src/policy-guard.ts:106 SDL "is(digests.length === 0" -> ""
+test("the_guard_refuses_a_sign_set_row_under_the_digest_floor", () => {
+  const up = find((r) => r.side === "up" && r.status === "region" && r.qhat === 0);
+  check(up);
+  refuse({ ...up, misses: 2, k_obs: 2 }, /has a digest that the publication refuses: scores \d+\.\d\d bits, labels \d+\.\d\d bits \(fewer than 2\^128 compatible sequences/);
+  refuse({ ...bandRegion, aux_sha256: "ab".repeat(32) }, /has a digest that the publication refuses: aux_sha256 \(/);
+  const cls = up.task_class, low = reforged((rows) => {
+    const c = rows.find((x) => x.key === up.cell_key && x.taskClass === cls) ?? assert.fail("no cell");
+    c.calib = { ...c.calib, misses: 2, kObs: 2 };
+  });
+  assert.throws(() => guardKataTable(tableFrom(cls, low.bytes, low.pins), low.bytes, low.pins, entry(cls)), /has a digest that the publication refuses: scores/);
+});
+
+// reddened by: a rejection named before a constant auxiliary sequence on a wave 1 row (the earlier order of
+// guardKataRow), where the generator names the constant sequence first, whatever check 1 says (kata/bench/calibrate.ts
+// l.135-136). A band row carries the case through every other clause; the generator reaches it on the down
+// side of a direction cell only (a flat label is a miss, the label sequence counts the up labels), where the digest floor refuses the row
+// killer: apps/harness/src/policy-guard.ts:83 COR "adm.empty ? [" -> "adm.empty && (w2 || !adm.reject) ? ["
+test("guard_names_a_constant_auxiliary_sequence_before_a_rejection", () => {
+  const silent = (r: PolicyRow, why: string): PolicyRow => ({ ...r, runs_miss: "reject", runs_aux: "empty", status: "silence", status_reason: why, bound_on: null, miss_bound: null });
+  const band = find((r) => r.side === null && r.status === "region" && (r.k_obs ?? 0) > 0);
+  refuse(silent(band, "dependence check rejects"), /has status 'silence' and reason 'dependence check rejects', not 'silence' and 'auxiliary sequence constant \(fails closed\)'/);
+  check(silent(band, "auxiliary sequence constant (fails closed)"));
+  const down = find((r) => r.side === "down" && r.status === "region" && r.qhat === 0 && (r.k_obs ?? 0) > 0);
+  refuse(silent(down, "auxiliary sequence constant (fails closed)"), /has a digest that the publication refuses: sign-set outcomes that no count of flats/);
+});
+
+/** The status and reason of a row the guard admits, else the guard's refusal; any other error is thrown again, so a crash fails the test and is never read as a verdict. */
+const verdict = (r: PolicyRow): [string, string] | string => { try { check(r); return [r.status, r.status_reason]; } catch (e) { if (e instanceof Error && e.message.startsWith("MONARK import guard: ")) return e.message; throw e; } };
+/** The whole refusal of a row by the guard, `what` read as plain text between the row's key and the closing period. */
+const whole = (what: string): RegExp => new RegExp(["^Error: MONARK import guard: \\S+ \\S+ ", what.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "\\.$"].join(""));
+
+// reddened by: a band row whose misses exceed k* admitted with the direction reason (the earlier guard):
+// a band's qhat is its (n - k*)-th score (packages/hikae/src/l1-split.ts l.73-78), so at most k* scores exceed it,
+// and the wave 1 generator gives that reason to direction cells only (kata/bench/calibrate.ts l.138)
+// killer: apps/harness/src/policy-guard.ts:76 CONST "dir || m <= ks" -> "dir || !w2 || m <= ks"
+test("guard_refuses_band_misses_above_k_star", () => {
+  const band = find((r) => r.side === null && r.status === "region" && (r.k_obs ?? 0) > 0);
+  const ks = band.k_star ?? assert.fail("no k_star"), m = ks + 1;
+  const above = whole(`has misses above k_star on a band row (misses ${String(m)}, k_star ${String(ks)}): a band's qhat is its (n - k_star)-th score, so at most k_star scores exceed it`);
+  refuse({ ...band, misses: m, k_obs: m, status: "silence", status_reason: `misses ${String(m)} above k* ${String(ks)}`, bound_on: null, miss_bound: null }, above);
+  refuse({ ...band, misses: m, k_obs: m }, above);
+  assert.deepEqual(verdict({ ...band, misses: ks, k_obs: ks }), ["region", ""], "misses = k* on a band: admitted");
+  assert.deepEqual(verdict(dirMisses), ["silence", `misses ${String(dirMisses.misses)} above k* ${String(dirMisses.k_star)}`], "the direction reason stays a direction's");
 });

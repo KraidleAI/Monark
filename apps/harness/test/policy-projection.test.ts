@@ -1,6 +1,6 @@
 /**
- * Registry cell -> class-policy-v2 row (lot CM-4a-i, block B1; docs/G0-lot-cm-4a-i.md; A-2 section 2.2 point 1), on the
- * seeded synthetic registry (plan r3 section 5.3 point 8), never on wave1.json. Each test names its killer above it.
+ * Registry cell -> class-policy-v2 row, on the seeded synthetic registry, never on wave1.json. Each test names its
+ * killer above it.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -80,7 +80,7 @@ test("projection_misses_never_from_k_obs", () => {
 test("projection_under_calib_row", () => {
   for (const dir of [true, false]) {
     const c = find((x) => (x.side !== null) === dir && x.status === "under_calib" && (x.thresholds !== null) === dir);
-    const r = projectCell(c, { ...INP, attestation: () => undefined }) ?? assert.fail("no row");
+    const r = admitted(c, { ...INP, attestation: () => undefined }) ?? assert.fail("no row");
     assert.match(r.status_reason, /^n \d+ below n0 (6|299)$/);
     assert.deepEqual([r.runs_miss, r.runs_aux, r.recompute, r.k_star, r.p_served, r.marginal_alpha, r.qhat], [null, null, null, null, null, null, null]);
     assert.deepEqual([r.miss_bound, r.bound_on, r.runs_level, r.status], [null, null, "0.05", "under_calib"]);
@@ -94,8 +94,8 @@ test("projection_side_without_thresholds_has_no_row", () => {
   for (const c of sides) assert.equal(projectCell(c, INP), null);
   const c = sides[0] as RegistryCell;
   assert.equal(c.calib.reason, NO_THRESHOLDS);
-  assert.throws(() => projectCell({ ...c, status: "silence" }, INP), /L-1/);
-  assert.throws(() => projectCell({ ...c, calib: { ...c.calib, reason: "empty bucket" } }, INP), /L-1/);
+  assert.throws(() => projectCell({ ...c, status: "silence" }, INP), { message: `MONARK registry cell: ${c.key} has no thresholds on its side but is not under_calib with the reason '${NO_THRESHOLDS}'.` });
+  assert.throws(() => projectCell({ ...c, calib: { ...c.calib, reason: "empty bucket" } }, INP), { message: `MONARK registry cell: ${c.key} has no thresholds on its side but is not under_calib with the reason '${NO_THRESHOLDS}'.` });
 });
 
 // killer: apps/harness/src/policy-projection.ts:118 CONST "scores_sha256: c.scoresSha256" -> "scores_sha256: c.auxSha256"
@@ -144,3 +144,6 @@ test("projected_rows_pass_the_closed_check", () => {
   }
   assert.equal(canonicalJson(rows), canonicalJson(readRegistry(SYN.bytes).map((c) => projectCell(c, INP)).filter((r) => r !== null)));
 });
+
+/** projectCell judged by an assertion: a refusal of the closed row check fails the test by assert.fail with its message; any other error is thrown again, so a crash is never read as a verdict. */
+const admitted = (c: RegistryCell, inp: ProjectionInputs): PolicyRow | null => { try { return projectCell(c, inp); } catch (e) { if (e instanceof Error && e.message.startsWith("MONARK policy check: ")) assert.fail(e.message); throw e; } };

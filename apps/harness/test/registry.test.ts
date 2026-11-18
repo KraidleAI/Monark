@@ -1,5 +1,5 @@
 /**
- * Harness — registry safety (K-8) and vocab honesty (ADR-M005 D9/D11).
+ * Harness — registry safety and vocab honesty.
  * No `any` (off the ratchet). The static scan targets DOUBLE/SINGLE-quoted module specifiers, so the
  * prose in the tool sources (which names these modules in backticks) is not a false positive.
  */
@@ -17,6 +17,7 @@ import { SCHEMA_VERSION } from "../src/tools/gate.ts";
 import { cascadeHonestyText, CASCADE_PREDICTOR_ID } from "../src/tools/cascade.ts";
 import { attestHonestyText } from "../src/tools/attest.ts";
 import { calibrateHonestyText } from "../src/tools/calibrate.ts";
+import { JUDGE_EXIT_LABEL, JUDGE_LABEL, JUDGE_NO_VERDICT_LABEL, type KernelRunner } from "../src/tools/judge.ts";
 import { UKEMI_LIQ_PREDICTOR_BASE, USDE_STABLE_RUN_PREDICTOR_ID } from "../src/calibration.ts";
 
 interface VocabRule { re: string; why: string; }
@@ -35,7 +36,7 @@ function collectTs(dir: string): string[] {
   return out;
 }
 
-/** Forbidden side-effect surfaces in a tool implementation (K-8). */
+/** Forbidden side-effect surfaces in a tool implementation. */
 const FORBIDDEN: { re: RegExp; why: string }[] = [
   { re: /["']node:fs["']/, why: "node fs import" },
   { re: /["']node:net["']/, why: "node net import" },
@@ -45,12 +46,11 @@ const FORBIDDEN: { re: RegExp; why: string }[] = [
   { re: /\bDate\.now\b|new Date\(\s*\)|\bperformance\.now\b/, why: "clock read (a call or a reference, CM-2a C-7)" },
 ];
 
-// Test — the registry is (a) within the closed allowlist and (b) EXACTLY the terminal set
-// {attest,gate,cascade} (ADR-M005 D9, reached at H3; H1 was `["gate"]`, H2 `["cascade","gate"]`), and no
-// tool implementation has a side effect. Mutants: a tool outside the allowlist, a stray/premature
-// registration, or a `node:fs` import in a tools file ⇒ red.
+// Test — the registry is (a) within the closed allowlist and (b) EXACTLY the set {attest,gate,cascade,calibrate,judge},
+// and no tool implementation has a side effect.
+// Mutants: a tool outside the allowlist, a stray/premature registration, or a `node:fs` import in a tools file ⇒ red.
 test("mcp_tools_have_no_side_effects", () => {
-  // (1) closed allowlist (K-8): registered ⊆ {attest, gate, cascade, calibrate}, and all four are present at C1.
+  // (1) closed allowlist: registered ⊆ {attest, gate, cascade, calibrate, judge}, and all five are present.
   assert.ok(REGISTERED_TOOL_NAMES.length >= 1, "at least one tool registered");
   for (const name of REGISTERED_TOOL_NAMES) {
     assert.ok((ALLOWED_TOOL_NAMES as readonly string[]).includes(name), `tool '${name}' outside the closed allowlist`);
@@ -58,12 +58,12 @@ test("mcp_tools_have_no_side_effects", () => {
   assert.ok(REGISTERED_TOOL_NAMES.includes("gate"), "the `gate` tool stays registered");
   assert.ok(REGISTERED_TOOL_NAMES.includes("cascade"), "the `cascade` tool stays registered");
   assert.ok(REGISTERED_TOOL_NAMES.includes("attest"), "the `attest` tool stays registered");
-  assert.ok(REGISTERED_TOOL_NAMES.includes("calibrate"), "the `calibrate` tool is registered in C1");
-  // (1b) EXACT registry: C1 registers EXACTLY `attest` + `cascade` + `gate` + `calibrate` — the
-  // TERMINAL set {attest,gate,cascade,calibrate} (ADR-M007, set terminal 3→4 ratified by a product decision),
-  // reached incrementally (H1 `gate`, H2 `cascade`, H3 `attest`, C1 `calibrate`). A premature or stray
-  // registration reddens here, where the subset allowlist above would tolerate it.
-  assert.deepEqual([...REGISTERED_TOOL_NAMES].sort(), ["attest", "calibrate", "cascade", "gate"], "C1 registers exactly attest + cascade + gate + calibrate (terminal set, ADR-M007)");
+  assert.ok(REGISTERED_TOOL_NAMES.includes("calibrate"), "the `calibrate` tool is registered");
+  assert.ok(REGISTERED_TOOL_NAMES.includes("judge"), "the `judge` tool is registered");
+  // (1b) EXACT registry: exactly `attest` + `cascade` + `gate` + `calibrate` + `judge`. A premature or stray registration
+  // reddens here, where the subset allowlist above would tolerate it.
+  assert.deepEqual([...REGISTERED_TOOL_NAMES].sort(), ["attest", "calibrate", "cascade", "gate", "judge"], "the registry is exactly attest + calibrate + cascade + gate + judge");
+  assert.deepEqual([...ALLOWED_TOOL_NAMES].sort(), ["attest", "calibrate", "cascade", "gate", "judge"], "the allowlist is exactly the five tools");
 
   // (2) static side-effect scan of src/tools/**.
   const files = collectTs(TOOLS_DIR);
@@ -76,15 +76,15 @@ test("mcp_tools_have_no_side_effects", () => {
   }
 });
 
-// ---------------------------------------------------------------------------- served surface (A-9-OUTILLE)
+// ---------------------------------------------------------------------------- served surface
 // The REAL served surface, obtained IN-PROCESS through the stateless MCP handler (createHarnessHandler, server.ts):
 // a JSON-RPC POST answered by the SDK exactly as on the mcp. host -- no socket, no listener, no network. tools/list
 // and tools/call below are the bytes a client receives (A-9: the phrase ACTUALLY served, never an intermediate).
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
 
-async function mcpCall(method: string, params?: Obj): Promise<Obj> {
-  const res = await createHarnessHandler().fetch(
+async function mcpCall(method: string, params?: Obj, kernel?: KernelRunner): Promise<Obj> {
+  const res = await createHarnessHandler(Date.now, kernel).fetch(
     new Request("http://mcp.monarkgate.tech/", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
@@ -131,10 +131,10 @@ function servedToolHits(tools: Obj[], patterns: CompiledRule[]): { tool: string;
 
 // Test — tool descriptions carry no banned vocabulary (GLOBAL + scan.harness). Mutant: put
 // `confidence` in a description ⇒ red (the in-process scan and the grep-forbidden CLI both catch it).
-// EXTENDED (A-9-OUTILLE, checkpoint-1 C-3): the scan also runs on the REAL served tools/list -- EVERY string leaf
+// EXTENDED: the scan also runs on the REAL served tools/list -- EVERY string leaf
 // (each tool description AND every inputSchema/outputSchema description), obtained through createHarnessHandler --
-// and the checkpoint-2 U-5a V5 surclaim slipped into EACH served tool description is caught ON THAT served list,
-// every hit naming its tool (mission 3a). Mutant `schema-description-probability` (a naked "probability" in a
+// and the V5 surclaim slipped into EACH served tool description is caught ON THAT served list,
+// every hit naming its tool. Mutant `schema-description-probability` (a naked "probability" in a
 // PARAMS_SCHEMA description, i.e. an inputSchema leaf) => red here.
 test("harness_tool_descriptions_pass_vocab", async () => {
   const config = JSON.parse(readFileSync(VOCAB_PATH, "utf8")) as VocabConfig;
@@ -145,13 +145,13 @@ test("harness_tool_descriptions_pass_vocab", async () => {
     const hits = scanText(tool.description, patterns);
     assert.equal(hits.length, 0, `tool '${tool.name}' description has banned vocab: ${JSON.stringify(hits)}`);
   }
-  // A-9-OUTILLE: the served-vocabulary rules are live on this scope, else the served scan below is vacuous for them.
+  // The served-vocabulary rules are live on this scope, else the served scan below is vacuous for them.
   for (const probe of ["the price is verified", "a probability of being right", "95% of the time", "the accuracy is high"]) {
     assert.ok(scanText(probe, compilePatterns(config.scan.harness.banned)).length >= 1, `scan.harness must redden '${probe}'`);
   }
 
-  // (served) the REAL tools/list: exactly the registry; each served description === its registry constant (liage,
-  // A-10); both schemas served; EVERY string leaf vocab-clean.
+  // (served) the REAL tools/list: exactly the registry; each served description === its registry constant;
+  // both schemas served; EVERY string leaf vocab-clean.
   const served = await servedToolsList();
   assert.deepEqual(served.map((t) => t["name"]), [...REGISTERED_TOOL_NAMES], "tools/list serves exactly the registry, in order");
   for (const t of served) {
@@ -163,7 +163,7 @@ test("harness_tool_descriptions_pass_vocab", async () => {
   assert.ok(schemaDescriptions.length >= 20, `the schema descriptions are scanned leaves (non-vacuous), saw ${String(schemaDescriptions.length)}`);
   assert.deepEqual(servedToolHits(served, patterns), [], "the served tools/list is vocab-clean (every string leaf)");
 
-  // (injection, mission 3a) V5 appended to EACH served tool description is caught on the SERVED tools/list, every hit
+  // (injection) V5 appended to EACH served tool description is caught on the SERVED tools/list, every hit
   // naming THAT tool; the descriptor is restored byte-exact after each round (same-file tests share the module).
   const V5 = "verified 95% probability of liquidation within the interval.";
   for (const tool of HARNESS_TOOLS) {
@@ -183,26 +183,30 @@ test("harness_tool_descriptions_pass_vocab", async () => {
   assert.deepEqual(servedToolHits(await servedToolsList(), patterns), [], "after restoration the served tools/list is clean again");
 });
 
-// Test (A-9-OUTILLE, checkpoint-1 C-1/C-3) -- the four honesty carriers AS SERVED: one real tools/call per served
+// Test -- the four honesty carriers AS SERVED: one real tools/call per served
 // branch (createHarnessHandler), in the DELIVERED state (empty liq registry, under_calib, BYO, the committed USDe key).
-// Each served content text IS its carrier (honestyText / cascadeHonestyText / attestHonestyText /
-// calibrateHonestyText, followed by the verdict summary the registry appends for gate/calibrate), and every served
-// honesty text (content + the output `label`) is vocab-clean AND never says "interval" (C-1: the wire vocabulary is
+// Each served content text IS its carrier (honestyText / cascadeHonestyText / attestHonestyText / calibrateHonestyText /
+// the judge labels, followed by the verdict summary the registry appends for gate/calibrate/judge), and every served
+// honesty text (content + the output `label`) is vocab-clean AND never says "interval" (the wire vocabulary is
 // kept out of the honesty prose, precedent u4b_liq_class_text_says_upper_bound_never_interval). Mutants:
-// `stable-run-uncalibrated-interval` (C-1) and `demonstrative-label-accuracy` (a served text born OUTSIDE
+// `stable-run-uncalibrated-interval` and `demonstrative-label-accuracy` (a served text born OUTSIDE
 // apps/harness/src, invisible to the static CLI) => red here.
-// CM-2b (ADR-CM B-5): btc-dir-15m is retired, so its carrier is no longer served: the call is a tool error with the
+// btc-dir-15m is retired, so its carrier is no longer served: the call is a tool error with the
 // stable code, and the gate reaches five distinct honesty branches.
-// killer: apps/harness/src/tools/gate.ts:966 CONST "\"task_class_retired\"" -> "\"task_class_unknown\""
+// killer: apps/harness/src/tools/gate.ts:953 CONST "\"task_class_retired\"" -> "\"task_class_unknown\""
 test("harness_served_honesty_carriers_pass_vocab", async () => {
   const config = JSON.parse(readFileSync(VOCAB_PATH, "utf8")) as VocabConfig;
   const patterns = [...compilePatterns(config.banned), ...compilePatterns(config.scan.harness.banned)];
   const AT = "2026-09-04T00:00:00Z";
   const P: Obj = { remainingBudget: 1, bFloor: 0, tau: 1, tauInterval: 1, alpha: 0.1, nMin: 5, intent: 0, tool: "demo_tool", clockOpen: true };
-  const pred = (task_class: string, yhat: string | number, predictor_id: string): Obj => ({ schema_version: SCHEMA_VERSION, task_class, yhat, predictor_id, produced_at: AT });
+  const pred = (task_class: string, yhat: string | number, predictor_id: string, produced_at: string = AT): Obj => ({ schema_version: SCHEMA_VERSION, task_class, yhat, predictor_id, produced_at });
   const TEN = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
   const BYO = "byo:demo-class";
-  const CALLS: { label: string; tool: string; args: Obj; carrier: string }[] = [
+  const LIMITS: Obj = { venues: ["venue:a"], assets: [{ asset: "btc", cap: "100" }] };
+  const JUDGE: Obj = { prediction: pred(BYO, 1, "caller:model"), params: { ...P, tauInterval: 2, calibration: { scores: TEN, mode: "interval" } }, order: { kind: "OPEN", target: "venue:a", asset: "btc", amount: "100" }, limits: LIMITS };
+  const answers = (status: number | null, out: string): KernelRunner => () => Promise.resolve({ status, stdout: new TextEncoder().encode(out) });
+  const allows = answers(0, "allow\n");
+  const CALLS: { label: string; tool: string; args: Obj; carrier: string; kernel?: KernelRunner }[] = [
     { label: "gate cascade class", tool: "gate", args: { prediction: pred(TASK_CASCADE, 100, CASCADE_PREDICTOR_ID), params: P }, carrier: honestyText(TASK_CASCADE, CASCADE_PREDICTOR_ID, false) },
     { label: "gate stable-run committed key", tool: "gate", args: { prediction: pred(TASK_STABLE_RUN, 0.0001, USDE_STABLE_RUN_PREDICTOR_ID), params: { ...P, nMin: 50 } }, carrier: honestyText(TASK_STABLE_RUN, USDE_STABLE_RUN_PREDICTOR_ID, false) },
     { label: "gate stable-run other population", tool: "gate", args: { prediction: pred(TASK_STABLE_RUN, 0.0001, "other:population"), params: P }, carrier: honestyText(TASK_STABLE_RUN, "other:population", false) },
@@ -213,28 +217,42 @@ test("harness_served_honesty_carriers_pass_vocab", async () => {
     { label: "attest", tool: "attest", args: {}, carrier: attestHonestyText() },
     { label: "calibrate", tool: "calibrate", args: { scores: TEN, alpha: 0.1, nMin: 5 }, carrier: calibrateHonestyText() },
     { label: "calibrate under_calib", tool: "calibrate", args: { scores: [0.1, 0.2], alpha: 0.1, nMin: 5 }, carrier: calibrateHonestyText() },
+    // judge: the label of a verdict of the kernel (an allow, or a deny with one of its reasons), and the label of no verdict
+    // (no kernel ran, the kernel refused the request, or its answer was not a verdict). Pinned as constants, not through
+    // judgeHonestyText, so that a judgeHonestyText that ignores the verdict reds here.
+    { label: "judge, no kernel", tool: "judge", args: JUDGE, carrier: JUDGE_NO_VERDICT_LABEL },
+    { label: "judge, a kernel that refuses the request", tool: "judge", args: JUDGE, carrier: JUDGE_NO_VERDICT_LABEL, kernel: answers(3, "") },
+    { label: "judge, an answer that is no verdict", tool: "judge", args: JUDGE, carrier: JUDGE_NO_VERDICT_LABEL, kernel: answers(null, "allow\n") },
+    { label: "judge, a kernel that allows", tool: "judge", args: JUDGE, carrier: JUDGE_LABEL, kernel: allows },
+    { label: "judge, a kernel that denies", tool: "judge", args: JUDGE, carrier: JUDGE_LABEL, kernel: answers(0, "deny venue\n") },
+    { label: "judge, an EXIT the kernel allows", tool: "judge", args: { ...JUDGE, order: { kind: "EXIT", target: "venue:a", asset: "eth", amount: "1" } }, carrier: JUDGE_LABEL, kernel: allows },
+    // An EXIT under an envelope the gate refuses (a produced_at long after the clock): the kernel judges it with no gate decision.
+    { label: "judge, an EXIT under an envelope the gate refuses", tool: "judge", args: { ...JUDGE, prediction: pred(BYO, 1, "caller:model", "2999-01-01T00:00:00Z"), order: { kind: "EXIT", target: "venue:a", asset: "eth", amount: "1" } }, carrier: JUDGE_EXIT_LABEL, kernel: allows },
   ];
-  // Non-vacuity: every served tool is exercised, and the five gate honesty branches are five DISTINCT served texts.
+  // Non-vacuity: every served tool is exercised, the five gate honesty branches are five DISTINCT served texts, and so are the
+  // three judge branches.
   assert.deepEqual([...new Set(CALLS.map((c) => c.tool))].sort(), [...REGISTERED_TOOL_NAMES].sort(), "every served tool is called");
   assert.equal(new Set(CALLS.filter((c) => c.tool === "gate").map((c) => c.carrier)).size, 5, "the gate calls reach five distinct honesty branches");
+  assert.equal(new Set(CALLS.filter((c) => c.tool === "judge").map((c) => c.carrier)).size, 3, "the judge calls reach its three honesty branches");
+  assert.doesNotMatch(JUDGE_NO_VERDICT_LABEL, /\bjudged\b/, "the label of no verdict never says the kernel judged the order");
   const retired = await mcpCall("tools/call", { name: "gate", arguments: { prediction: pred(TASK_BTC_DIR, "up", "internal:momentum-4c"), params: { ...P, intent: "up" } } });
   assert.equal(retired["isError"], true, "btc-dir-15m is a served tool error (retired)");
   assert.deepEqual(retired["_meta"], { "monarkgate.tech/error_code": "task_class_retired" }, "with the retired code");
   for (const c of CALLS) {
-    const r = await mcpCall("tools/call", { name: c.tool, arguments: c.args });
+    const r = await mcpCall("tools/call", { name: c.tool, arguments: c.args }, c.kernel);
     assert.notEqual(r["isError"], true, `${c.label}: served without a tool error (${JSON.stringify(r["content"])})`);
     const content = r["content"];
     assert.ok(Array.isArray(content) && content.length === 1, `${c.label}: one served content item`);
     const first: unknown = (content as unknown[])[0];
     const text = isObj(first) ? first["text"] : undefined;
     assert.ok(typeof text === "string", `${c.label}: the served content is a text`);
-    // liage (A-10): the served text IS its carrier, plus the verdict summary the registry appends (gate/calibrate).
+    // The served text IS its carrier, plus the verdict summary the registry appends (gate/calibrate).
     assert.ok(text === c.carrier || text.startsWith(`${c.carrier} verdict `), `${c.label}: served text === carrier (+ summary)`);
     const sc = r["structuredContent"];
     const label = isObj(sc) ? sc["label"] : undefined;
     for (const honest of typeof label === "string" ? [text, label] : [text]) {
       assert.deepEqual(scanText(honest, patterns), [], `${c.label}: the served honesty text is vocab-clean`);
-      assert.doesNotMatch(honest, /\binterval\b/i, `${c.label}: the served honesty text never says 'interval' (C-1)`);
+      assert.doesNotMatch(honest, /\binterval\b/i, `${c.label}: the served honesty text never says 'interval'`);
     }
   }
 });

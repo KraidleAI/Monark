@@ -22,7 +22,7 @@ until served) and the served pieces that let AI agents and DeFi meet on measured
 
 ## Two sides, one engine — the eleven components
 
-The engine is eleven components: three sensors, one gate, one act, six distribution pieces. Each of them can
+The engine is eleven components: three sensors, one gate, one order gate, one act, five distribution pieces. Each of them can
 serve both sides. **Left:** what it gives an AI agent connected to the MONARK MCP endpoint (today's four
 tools are `attest · gate · cascade · calibrate`; a component marked *planned* has no served tool yet).
 **Right:** what it gives the DeFi side — the on-chain applications it powers (in parentheses: the applications
@@ -40,7 +40,7 @@ on the site's diagram; *wired* = declared in the registry today, *can serve* = a
 | *planned*: quote and manage inventory for the agent's market-making. | **Kamae** — inventory market-making · *named* | Inventory-aware hedging for a treasury (can serve: Ballast). |
 | *planned*: read a PT / YT curve as an attested rate surface. | **Kyokusen** — PT / YT curve · *named* | The rate surface a rate treasury steadies against (can serve: Ballast). |
 | *planned*: the weekend / off-hours gap as a sensed quantity the agent can gate on. | **Koyomi** — weekend gap · *named* | The off-hours gap of tokenized equities, the very quantity Bell publishes (can serve: Bell). |
-| The door: discovery of the tools and the skill (MCP Registry `tech.monarkgate/monark`). | **Genkan** — the storefront / MCP entry point · *named* (the harness serves the door today) | Distribution of every application to the agents that consume it (can serve: all six). |
+| *planned*: `judge` — the agent sends an order with its gate envelope and its limits; Genkan's kernel, written in Lean 4, answers whether the order may leave (`allow`, or `deny` and a reason), under the gate's own decision on that call. | **Genkan** — the order gate, a Lean 4 kernel · *named* (the kernel, its theorems and the `judge` tool are in this repository; not served yet) | The last check before an application's order leaves (can serve: all six). |
 
 **Measurement first.** No piece of MONARK is designed on a whiteboard and shipped. Each one starts as an
 empirical study — a recorded liquidation book at an archive block, a redemption-flow series measured on calm
@@ -139,7 +139,67 @@ per-window coverage, not a probability of being right, not a price call.
 **Named on the engine's roadmap** (teasers — *not* delivered pieces, no metrics claimed): **Mokugeki**
 (document / event attestation) · **Kaihi** (LVR / toxicity avoidance) · **Kessai** (swap execution,
 transaction-cost analysis) · **Kamae** (inventory market-making) · **Kyokusen** (PT / YT curve) ·
-**Koyomi** (weekend gap) · **Genkan** (the storefront / MCP entry point).
+**Koyomi** (weekend gap) · **Genkan** (the order gate; its kernel is in this repository, see its section below).
+
+## Genkan — the order gate
+
+Genkan checks an order before it leaves. Its kernel is a small program written in Lean 4 (toolchain
+`leanprover/lean4:v4.32.1`, pinned) that reads one request on stdin and writes one answer on stdout: mode 1 judges an
+order under a context and answers `allow` or `deny <reason>`, mode 2 decodes an order, mode 3 computes a SHA-256. A
+malformed request, or an input over 1 MiB, exits with code 3. The harness's `judge` tool runs it: it runs the gate on the
+caller's envelope, then hands the kernel the gate's own action on that call and the caller's limits. The kernel, its
+theorems and `judge` are in this repository and tested against the built kernel; the public endpoint does not serve
+`judge` yet, so Genkan is labelled *named*.
+
+**The rules of the judge, in order.** The context carries the gate's action, the listed venues, the listed assets and
+their caps.
+
+| Order | Answer | When |
+|---|---|---|
+| 1 | deny `bad-ctx` | the context does not decode |
+| 2 | deny `bad-order` | the order does not decode |
+| 3 | deny `kind` | the order is not a SWAP, an EXIT or an OPEN: a TRANSFER or an APPROVE is always denied |
+| 4 | deny `venue` | the target is not a listed venue |
+| 5 | allow | an EXIT on a listed venue, whatever the action, the asset and the amount |
+| 6 | deny `not-commit` | the action is not commit |
+| 7 | deny `asset` | the asset is not listed |
+| 8 | deny `over-cap` | the amount passes the asset's cap (an amount equal to the cap passes) |
+| 9 | deny `asset-out` | a SWAP's output asset is not listed |
+| 10 | deny `min-out` | a SWAP's `minOut` is 0 |
+| 11 | allow | otherwise |
+
+**What is proved.** `apps/genkan/kernel/Genkan/Theorems.lean` holds 30 theorems, among them:
+
+| Theorem | Statement |
+|---|---|
+| `judge_transfer`, `judge_approve` | a TRANSFER or an APPROVE is denied, whatever the context |
+| `judge_allow_kind` | an allowed order is a SWAP, an EXIT or an OPEN |
+| `judge_allow_venue` | an allowed order targets a listed venue |
+| `judge_exit` | an EXIT on a listed venue is allowed |
+| `judge_allow_commit`, `judge_not_commit` | an allowed order other than an EXIT follows the action commit |
+| `judge_allow_one_cap` | an allowed order other than an EXIT stays within its asset's cap |
+| `judge_allow_swap_listed` | an allowed SWAP has a listed output asset and `minOut` above 0 |
+| `respond_allow_safe` | the kernel's `allow`, whatever the input, in one statement: the input is a mode 1 request that decodes, and the order meets the kind, venue, action, cap and SWAP rules above |
+
+**How it is checked.** CI audits the kernel sources before any Lean runs, fetches the Lean release and holds it to its
+sha256, builds the kernel, replays each module with the toolchain's `leanchecker`, and holds the axiom record of `main`
+and of each theorem to `propext`, `Classical.choice` and `Quot.sound`. The judge runs against 82 cases
+(`apps/genkan/kernel/vectors/judge.json`); of the 55 mutants of `Genkan/Judge.lean`, 49 are killed by a case, 6 do not
+compile and none survives (`apps/genkan/test/mutants.kernel.test.ts`).
+
+**What it does not guarantee.**
+
+- The action is the caller's word: the context carries it as one byte. The harness's `judge` takes it from the decision
+  it computes on the same call.
+- The lists and the caps are the caller's. The kernel knows no balance, position, price or venue rule.
+- An EXIT on a listed venue always passes, so that the gate's silence never traps a position. Whoever executes it must
+  make it reduce or close a position and nothing else (reduce-only at the venue).
+- A cap holds one order, not a total.
+- `minOut` above 0 is not a slippage guard.
+
+The paper executor (`apps/harness/src/paper.ts`, not served) passes each signal through `judge` and fills the allowed
+orders on paper, in a journal that replays; it places no order on any venue. The formats and the full list are in
+[`apps/genkan/README.md`](apps/genkan/README.md).
 
 ## The applications — DeFi side
 
@@ -202,8 +262,8 @@ Where a study finds nothing, the piece says so: an `abstain`, a named residual, 
 
 ```
 AI side — the MONARK engine
-  sensors (attest)  →  the gate: Hikae + MONARK B_t  →  acts (execute · upcoming)
-                            commit | defer | abstain
+  sensors (attest)  →  the gate: Hikae + MONARK B_t  →  Genkan: the order check  →  acts (execute · upcoming)
+                            commit | defer | abstain         allow | deny
   harness (MCP / HTTP)  ·  adaptation agents: recalibrate · onboard · track · watch
                                         │
                                         ▼
@@ -230,6 +290,11 @@ change to the engine meets the same maturity criteria.
   read the chain, and does not check the BLS signature of the public randomness beacon.
 - **Narabi.** Recompute every window from its `[from_block, to_block]` via `eth_getLogs` + `totalSupply`,
   then re-derive `q` with the committed `trackerReplay` over the `s` column of `timeline.jsonl`.
+- **Genkan.** With the pinned toolchain under `ELAN_HOME`, `node apps/genkan/scripts/lake.mjs build` builds the kernel,
+  `node apps/genkan/scripts/records.mjs --replay` replays each module with the toolchain's `leanchecker`,
+  `node apps/genkan/scripts/records.mjs --out <file>` writes the axiom record of `main` and of each theorem, and
+  `node apps/genkan/scripts/audit.mjs --axioms-from <file>` refuses any axiom but `propext`, `Classical.choice` and
+  `Quot.sound`. `npm run test:genkan` runs the 82 cases and the mutants against the built kernel.
 - **The site.** Every figure on `monarkgate.tech` is read from a file under `apps/site/data/` whose hash is
   pinned in `manifest.sha256.json` and compared byte for byte to the served file by a test.
 
@@ -306,10 +371,20 @@ npm ci
 npm run ci   # vocabulary gate → typecheck (tsc strict) → tests (node:test)
 ```
 
+Genkan's kernel needs the pinned Lean toolchain (`leanprover/lean4:v4.32.1`) under `ELAN_HOME`. `lake.mjs` builds in a
+temp folder that must exist: `GENKAN_TMP` when it is set; else, on Windows, `tmp\genkan` at the root of drive F; else
+`genkan` under `RUNNER_TEMP` or the system temp folder. On Windows it refuses a toolchain home or a temp folder on drive C.
+
+```bash
+node apps/genkan/scripts/audit.mjs --source-only                    # audit the kernel sources (before the build, as CI does)
+ELAN_HOME=<toolchain home> node apps/genkan/scripts/lake.mjs build  # build the kernel
+ELAN_HOME=<toolchain home> npm run test:genkan                      # the Genkan tests, the kernel's included
+```
+
 ## Engineering choices
 
 - **Polyglot fleet, schema-first contracts.** Shōgen is Rust, the runtime is **Python**, Hikae's engine and
-  the storefront are **TS**. So the contracts are expressed as language-neutral **JSON Schema**; the TS
+  the harness are **TS**. So the contracts are expressed as language-neutral **JSON Schema**; the TS
   package in `packages/contracts` is the first binding. Rust and Python bind to the same schemas.
 - **Zero runtime dependencies.** The published contracts pull in nothing at runtime. Dev deps:
   `typescript`, `@types/node`, `ajv`/`ajv-formats` (**test-only**), and `eslint`/`typescript-eslint` (lint only); tests run on the built-in
@@ -322,6 +397,9 @@ npm run ci   # vocabulary gate → typecheck (tsc strict) → tests (node:test)
 - **Measured before served.** A piece reaches a public surface only with its study artefacts committed
   and hashed next to it (calibration digests, recorded fixtures with same-directory provenance, replayable
   timelines) and an end-to-end execution test as the proof of composition.
+- **Genkan's kernel is Lean 4.** The order check is written where its rules can be proved: they are theorems, replayed
+  in CI under the pinned toolchain; the TypeScript side frames the bytes and reads the answer fail-closed (an `allow`
+  only for exit code 0 and exactly the line `allow`).
 
 ## Layout
 
@@ -332,12 +410,13 @@ packages/hikae      HAC-CP engine: L1 split / L2 monitor / L3 gate, interval con
 packages/ukemi      liquidation-cascade survival: clearing, liquidable                  (built)
 packages/monark     integration adapters: Shōgen→AttestedPrice, Narabi AttestedFlow→Prediction; canonical CBOR
 packages/atelier    local demo surface (not a shipped application)
-apps/harness        the MCP / HTTP harness — four tools over the frozen contracts (engine, AI side)
+apps/harness        the MCP / HTTP harness — four served tools over the frozen contracts, plus judge (engine, AI side)
+apps/genkan         Genkan — the order gate: a Lean 4 kernel, its theorems, vectors and frames (named)
 apps/sentinel       off-tool sentinels: Narabi daily tracker; Ukemi liquidation-book recorder (engine, AI side)
 apps/bell           MONARK Bell — the first application (DeFi side): publisher, hash chain, verifier, public keyring
 apps/site           public vitrine
 skills/monark       the integration skill (MIT-0)
-.github/workflows   CI (5 blocking jobs)
+.github/workflows   CI (6 blocking jobs)
 ```
 
 ## Links

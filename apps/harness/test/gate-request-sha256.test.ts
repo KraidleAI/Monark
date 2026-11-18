@@ -1,11 +1,10 @@
 /**
- * Harness: the served /gate body in contract 1.1.0 (block C, lot CM-3c-3b1). Every decision served over the HTTP mirror
- * and over MCP tools/call validates the frozen gate-decision schema (ajv, with the coverage-verdict schema it references),
- * and its request_sha256 is the digest of the envelope AS RECEIVED: sha256 of canonicalJson(JSON.parse(body)), whatever
- * the key order and the blanks of the body (GateInput.requestSha256, gap 1 of lot 3c-3a; Q-C2 condition 3). The closed
- * check of the contracts package checks unknown keys only, so a decision that dropped request_sha256 would pass it: the
- * schema is the net here (minor m-5 of the G2 of lot 3c-3a). Paths: BYO set, BYO interval, USDe, liq, cascade.
- * No network: the HTTP mirror is called in process, MCP on a loopback server.
+ * Harness: the served /gate body in contract 1.1.0. Every decision served over the HTTP mirror and over MCP tools/call
+ * validates the frozen gate-decision schema (ajv, with the coverage-verdict schema it references), and its
+ * request_sha256 is the digest of the envelope AS RECEIVED: sha256 of canonicalJson(JSON.parse(body)), whatever the key
+ * order and the blanks of the body (GateInput.requestSha256). The closed check of the contracts package checks unknown
+ * keys only, so a decision that dropped request_sha256 would pass it: the schema is the net here. Paths: BYO set, BYO
+ * interval, USDe, liq, cascade. No network: the HTTP mirror is called in process, MCP on a loopback server.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -98,7 +97,7 @@ function mcpStructured(raw: string): Record<string, unknown> {
   return sc;
 }
 
-// killer: apps/harness/src/tools/gate.ts:1023 SDL "    requestSha256: envelopeSha256(prediction, params, attested), // contract 1.1.0: the envelope as received" -> ""
+// killer: apps/harness/src/tools/gate.ts:1010 SDL "    requestSha256: envelopeSha256(prediction, params, attested), // contract 1.1.0: the envelope as received" -> ""
 test("served_gate_body_validates_the_frozen_decision_schema", async () => {
   const validate = decisionValidator();
   const check = (where: string, sc: Record<string, unknown>, body: string): void => {
@@ -129,7 +128,7 @@ test("served_gate_body_validates_the_frozen_decision_schema", async () => {
 
 // The digest is over the received envelope, not over a fixed part of it: two bodies equal up to key order and blanks
 // give one digest; a body that differs in one params field (intent) or in one prediction field (yhat) gives another.
-// killer: apps/harness/src/tools/gate.ts:1058 CONST "requestSha256({ prediction, params, " -> "requestSha256({ prediction, params: {}, "
+// killer: apps/harness/src/tools/gate.ts:1045 CONST "requestSha256({ prediction, params, " -> "requestSha256({ prediction, params: {}, "
 test("request_sha256_is_the_digest_of_the_received_envelope", async () => {
   const post = async (envelope: unknown, pretty: boolean): Promise<string> => {
     const body = pretty ? bodyOf(envelope) : JSON.stringify(envelope);
@@ -147,9 +146,9 @@ test("request_sha256_is_the_digest_of_the_received_envelope", async () => {
   assert.notEqual(await post({ ...usde, prediction: { ...usde.prediction, yhat: 0.0002 } }, false), same, "another yhat, another digest");
 });
 
-// Q-C2 (ADR-CM line 2026-10-05 (5)): an envelope not writable canonically (I-JSON) is a named 400 param_invalid, over
-// HTTP and MCP, after every existing check (whose codes stay); bodies equal up to their canonical writing share a digest.
-// killer: apps/harness/src/tools/gate.ts:1060 CONST "if (e instanceof RangeError)" -> "if (false)"
+// An envelope not writable canonically (I-JSON) is a named 400 param_invalid, over HTTP and MCP, after every existing
+// check (whose codes stay); bodies equal up to their canonical writing share a digest.
+// killer: apps/harness/src/tools/gate.ts:1047 CONST "if (e instanceof RangeError)" -> "if (false)"
 test("i_json_envelopes_are_param_invalid_and_existing_refusals_keep_their_code", async () => {
   const set = ENVELOPES["byo-set"], usde = ENVELOPES["usde"], itv = ENVELOPES["byo-interval"], liq = ENVELOPES["liq"];
   assert.ok(set !== undefined && usde !== undefined && itv !== undefined && liq !== undefined);

@@ -62,8 +62,8 @@ export const UKEMI_PREDICT_LABEL =
   "the book slice, its digest and the oracle path are carried by the caller and are NOT re-verified here (no verifier runs, K-8); " +
   "the book is a snapshot at the block and is stale; never a probability; no guarantee, no score.";
 
-/** A tool-level error (K-4a analog): surfaced by the MCP/HTTP seam as a 400 tool error, never a silent output
- *  and never a 500. Registered in `TOOL_ERROR_NAMES` (http.ts) so a refusal is a client error. */
+/** A tool-level error (K-4a analog), never a silent output. The tool is not registered, and its name is not in
+ *  `TOOL_ERROR_NAMES` (http.ts): whoever registers the tool adds it there, so that a refusal answers 400, never 500. */
 export class UkemiPredictToolError extends Error {
   /** Stable error code of this class (ADR-CM B-3, plan docs/G0-lot-cm-2a.md). */
   readonly code: HarnessErrorCode = "ukemi_predict_input_invalid";

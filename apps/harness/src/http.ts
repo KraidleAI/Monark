@@ -1,7 +1,7 @@
 /**
- * Harness — HTTP/JSON MIRROR of the MCP surface (ADR-M005 D7/D8).
+ * Harness — HTTP/JSON MIRROR of the MCP surface.
  *
- * The SAME four operations (attest, gate, cascade, calibrate), the SAME frozen input/output schemas
+ * The SAME five operations (attest, gate, cascade, calibrate, judge), the SAME frozen input/output schemas
  * (`schema-projection.ts` / the registry), exposed as plain JSON: `POST /{tool}` with a JSON body ->
  * a JSON response mirroring the MCP `CallToolResult` (`{ structuredContent, content }`). The mirror is
  * DERIVED from the SAME `HARNESS_TOOLS` registry the MCP server registers, so the two surfaces cannot
@@ -10,18 +10,19 @@
  * type) is a `400`, mirroring how the MCP boundary rejects it, never a silent result.
  *
  * `structuredContent` is byte-identical to the MCP `structuredContent` (the frozen, closed contract for
- * gate/cascade; the K-1 envelope for attest); the honesty prose rides in `content`, OUTSIDE the frozen
- * contract (K-1) — the frozen output is `additionalProperties:false` and can carry no note.
+ * gate/cascade; the envelope of attest; the non-frozen envelopes of calibrate and judge); the honesty prose rides in
+ * `content`, OUTSIDE the frozen contract — the frozen output is `additionalProperties:false` and can carry no note.
  *
  * NO side effects, NO secret: this module composes the pure registry tools, reads no env var, opens no
  * socket (server.ts owns the one 127.0.0.1 listener), and makes no network call. Routing (by Host:
- * `api.` -> here, `mcp.`/default -> the MCP handler) and the Origin guard (K-9, on BOTH surfaces) live in
+ * `api.` -> here, `mcp.`/default -> the MCP handler) and the Origin guard (on BOTH surfaces) live in
  * server.ts, applied BEFORE this handler.
  */
 import { HARNESS_TOOLS, REGISTERED_TOOL_NAMES } from "./tools/registry.ts";
 import type { HarnessToolDescriptor } from "./tools/registry.ts";
 import { buildOpenApi } from "./openapi.ts";
 import { toolErrorCode, type HarnessErrorCode } from "./tools/gate.ts";
+import type { KernelRunner } from "./tools/judge.ts";
 
 const JSON_HEADERS = { "content-type": "application/json" } as const;
 
@@ -33,9 +34,9 @@ const TOOL_BY_NAME: ReadonlyMap<string, HarnessToolDescriptor> = new Map(
 /** The operations the JSON mirror serves == exactly the registered MCP tools (no more, no less). */
 export const MIRROR_OPERATIONS: readonly string[] = REGISTERED_TOOL_NAMES;
 
-/** Names of the tool-level errors the pure tools throw - surfaced as `400` with their stable `code` (ADR-CM B-3),
+/** Names of the tool-level errors the pure tools throw - surfaced as `400` with their stable `code`,
  *  never a `500` with a stack. */
-const TOOL_ERROR_NAMES: ReadonlySet<string> = new Set(["HarnessToolError", "CascadeToolError", "AttestToolError", "CalibrateToolError", "UkemiPredictToolError"]);
+export const TOOL_ERROR_NAMES: ReadonlySet<string> = new Set(["HarnessToolError", "CascadeToolError", "AttestToolError", "CalibrateToolError"]);
 
 function json(body: unknown, status = 200, extraHeaders?: Readonly<Record<string, string>>): Response {
   return new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...(extraHeaders ?? {}) } });
@@ -48,10 +49,11 @@ function json(body: unknown, status = 200, extraHeaders?: Readonly<Record<string
  * `405` + `Allow: POST` and a "use POST /{tool}" hint (an unknown path stays `404`), so a caller that GETs
  * self-corrects. The Origin guard is applied by server.ts BEFORE this, identically to the MCP path, so
  * this handler never sees a present-and-invalid Origin. `clock` is the current instant handed to the tool
- * (ADR-CM B-4), read here in src/ (K-8). The output is validated against the tool's output schema before it is
- * sent (ADR-CM B-6): an invalid output is a `500` with code `output_invalid`, never served.
+ * and read here in src/. `kernel` is the runner of Genkan's kernel handed to `judge` (server.ts passes it);
+ * absent, `judge` denies every order `unavailable`. The output is validated against the tool's output schema before it is
+ * sent: an invalid output is a `500` with code `output_invalid`, never served.
  */
-export async function handleJsonMirror(request: Request, clock: () => number = Date.now): Promise<Response> {
+export async function handleJsonMirror(request: Request, clock: () => number = Date.now, kernel?: KernelRunner): Promise<Response> {
   const { pathname } = new URL(request.url);
 
   if (request.method === "GET") {
@@ -91,15 +93,15 @@ export async function handleJsonMirror(request: Request, clock: () => number = D
   }
 
   // Validate with the SAME projected standard schema the MCP boundary uses (mirror the boundary): a
-  // present-but-invalid body (extra key vs additionalProperties:false, missing/typed field) -> 400.
+  // present-but-invalid body (extra key vs additionalProperties:false, missing/typed field) -> 400, its issues capped by that schema.
   const validated = await tool.inputStandardSchema["~standard"].validate(body);
   if (validated.issues !== undefined) {
     return json({ error: "invalid_input", operation: name, message: `the body of POST /${name} does not match its input schema`, code: "input_invalid", issues: validated.issues }, 400);
   }
 
-  let result: ReturnType<HarnessToolDescriptor["run"]>;
+  let result: Awaited<ReturnType<HarnessToolDescriptor["run"]>>;
   try {
-    result = tool.run(validated.value, { nowMs: clock() });
+    result = await tool.run(validated.value, kernel === undefined ? { nowMs: clock() } : { nowMs: clock(), kernel });
   } catch (error) {
     // A tool-level refusal (bad params / refused witness) is a client error, never a leaked stack.
     if (error instanceof Error && TOOL_ERROR_NAMES.has(error.name)) {
@@ -107,7 +109,7 @@ export async function handleJsonMirror(request: Request, clock: () => number = D
     }
     return json({ error: "internal_error", operation: name }, 500);
   }
-  // S-15 / B-6: the mirror serves only an output its MCP twin would accept (same projected output schema).
+  // The mirror serves only an output its MCP twin would accept (same projected output schema).
   const checked = await tool.outputStandardSchema["~standard"].validate(result.structured);
   if (checked.issues !== undefined) {
     const code: HarnessErrorCode = "output_invalid";

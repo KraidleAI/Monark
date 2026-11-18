@@ -1,7 +1,6 @@
 /**
- * Harness - stable error codes (chantier moteur, lot CM-2a, audit P3 points S-6 and S-15).
- * Oracle: docs/adr/ADR-CM-chantier-moteur-audit-P3.md section 5 B-3 (extended to MCP by the amendment "nuit, 2") and B-6;
- * plan docs/G0-lot-cm-2a.md. Every tool refusal carries a stable code from a closed list: in the HTTP error body
+ * Harness - stable error codes.
+ * Every tool refusal carries a stable code from a closed list: in the HTTP error body
  * (`{error, operation, message, code}`) and in the MCP `_meta` (`monarkgate.tech/error_code`), the MCP text staying
  * byte-identical. The HTTP mirror validates its output before serving it. New names of the code are read through a
  * namespace import, so the base loads this file and reddens by assertion. Each test names its killer above it.
@@ -25,7 +24,7 @@ import { projectShogen } from "../src/tools/attest.ts";
 import { SHOGEN_LOT_BYTES, SHOGEN_VERDICT_TEXT, SHOGEN_CONSTAT } from "../src/shogen-fixture.ts";
 import { USDE_STABLE_RUN_PREDICTOR_ID } from "../src/calibration.ts";
 
-/** The closed list of codes, pinned in order (G0 CM-2a, rules S-6 2 to 4; the last 8 reserved since 1.1.0 block A, Q-3). */
+/** The closed list of codes, pinned in order (the last 8 reserved since 1.1.0). */
 const CODES = [
   "param_invalid", "schema_version_unsupported", "byo_calibration_invalid", "byo_yhat_type", "byo_set_tau_cap",
   "yhat_type_mismatch", "liq_yhat_domain", "attested_inconsistent", "task_class_unknown", "byo_overrides_committed",
@@ -136,7 +135,7 @@ function callArgs(src: string, open: number): string[] {
 }
 
 // Test E-2 (F2P): every `new HarnessToolError(` in apps/harness/src names a code; a literal code is in the list.
-// killer: apps/harness/src/tools/gate.ts:353 CONST "\"param_invalid\");" -> ");"
+// killer: apps/harness/src/tools/gate.ts:357 CONST "\"param_invalid\");" -> ");"
 test("every_harness_tool_error_names_a_code", () => {
   const SRC = fileURLToPath(new URL("../src", import.meta.url));
   const walk = (dir: string): string[] =>
@@ -159,11 +158,10 @@ test("every_harness_tool_error_names_a_code", () => {
   }
 });
 
-// Q-F2 (go of the founder, "Version + depot de spec"; lot CM-3c-3c): the refusal of a 1.0.0 prediction names the version
-// the gate speaks and the specification repository, on the thrown error and on the HTTP 400 body. Exact text: MONARK's dated
-// line (10) of the ADR-CM (0fcc18f2), "the gate" and not "the harness" (lot CM-3c-4a). The specification URL stays pinned
-// by the same literal (its former killer, "; specification: ..." -> "", is drawn by hand).
-// killer: apps/harness/src/tools/gate.ts:902 CONST "the gate speaks" -> "the harness speaks"
+// The refusal of a 1.0.0 prediction names the version the gate speaks and the specification repository, on the thrown
+// error and on the HTTP 400 body. The exact text says "the gate" and not "the harness". The specification URL stays
+// pinned by the same literal (its former killer, "; specification: ..." -> "", is drawn by hand).
+// killer: apps/harness/src/tools/gate.ts:888 CONST "the gate speaks" -> "the harness speaks"
 test("schema_version_refusal_names_the_spoken_version_and_the_spec_repository", async () => {
   const text = "unsupported prediction.schema_version '1.0.0': the gate speaks '1.1.0'; specification: https://github.com/KraidleAI/monark-kata-spec";
   assert.equal(SCHEMA_VERSION, "1.1.0");
@@ -175,7 +173,7 @@ test("schema_version_refusal_names_the_spoken_version_and_the_spec_repository", 
 });
 
 // Test E-3 (F2P): each refusal path of runGate carries its code; the four liq messages stay byte-identical.
-// killer: apps/harness/src/tools/gate.ts:834 CONST "code: \"byo_reserved_kata\"" -> "code: \"byo_lookalike_committed\""
+// killer: apps/harness/src/tools/gate.ts:815 CONST "code: \"byo_reserved_kata\"" -> "code: \"byo_lookalike_committed\""
 test("gate_refusals_carry_their_code", () => {
   const cases: [string, () => unknown, string][] = [
     ["nMin 0", () => runGate(pred("btc-dir-15m", "up"), { ...PARAMS, nMin: 0 }), "param_invalid"],
@@ -208,7 +206,7 @@ test("gate_refusals_carry_their_code", () => {
     assert.equal(codeOf(fn, at).code, code, `${at}: code ${code}`);
   }
 
-  // liq: codes, and the messages byte-identical to the base (B-3 adds a code, never rewrites a message).
+  // liq: codes, and the messages byte-identical to the base (a code is added, a message is never rewritten).
   const liq: [string, () => unknown, string, string][] = [
     ["liq 1.5", () => runGate(pred(LIQ, 1.5), LIQ_PARAMS), "liq_yhat_domain",
       "task_class 'liquidation-eligible-coverage' expects yhat to be a non-negative safe integer (base 8-dec liquidable amount), got 1.5"],
@@ -228,7 +226,7 @@ test("gate_refusals_carry_their_code", () => {
 
 // Test E-4 (F2P): the HTTP error body is {error, operation, message, code}, in that order, status 400, for the
 // gate and for the other tools' error classes (default code per class).
-// killer: apps/harness/src/http.ts:106 SDL ", code: toolErrorCode(error)" -> ""
+// killer: apps/harness/src/http.ts:108 SDL ", code: toolErrorCode(error)" -> ""
 test("http_tool_error_body_carries_the_code", async () => {
   const gateBody = (p: Prediction, params: HarnessParams): unknown => ({ prediction: p, params });
   const cases: [string, unknown, string, string, string][] = [
@@ -253,7 +251,7 @@ test("http_tool_error_body_carries_the_code", async () => {
 
 // Test E-5 (F2P): an MCP tool error keeps today's text as its first (and only) content, isError, and adds the code
 // in _meta.
-// killer: apps/harness/src/tools/registry.ts:155 SDL ", _meta: { [ERROR_CODE_META_KEY]: code }" -> ""
+// killer: apps/harness/src/tools/registry.ts:151 SDL ", _meta: { [ERROR_CODE_META_KEY]: code }" -> ""
 test("mcp_tool_error_keeps_its_text_and_adds_the_code", async () => {
   const cases: [string, Obj, string, string][] = [
     ["gate", { prediction: pred("nope-class", 1), params: PARAMS }, UNKNOWN_MESSAGE, "task_class_unknown"],
@@ -270,11 +268,11 @@ test("mcp_tool_error_keeps_its_text_and_adds_the_code", async () => {
 
 // Test E-6 (F2P): the HTTP mirror validates its output against the tool's output schema: an invalid output is a 500
 // with code output_invalid, never served; a valid one stays 200.
-// killer: apps/harness/src/http.ts:112 CONST "checked.issues !== undefined" -> "false"
+// killer: apps/harness/src/http.ts:114 CONST "checked.issues !== undefined" -> "false"
 test("http_mirror_validates_its_output", async () => {
   const body = { prediction: pred("stable-run-velocity-24h", 0.0001, USDE_STABLE_RUN_PREDICTOR_ID), params: { ...PARAMS, intent: 0 } };
   const retired = await mirror("/gate", { ...body, prediction: pred("btc-dir-15m", "up", "internal:momentum-4c") });
-  assert.equal(retired.status, 400, "btc-dir-15m is retired (CM-2b), the USDe key is the served vehicle");
+  assert.equal(retired.status, 400, "btc-dir-15m is retired, the USDe key is the served vehicle");
   assert.match(retired.text, /"code":"task_class_retired"/, "retired code");
   const tool = HARNESS_TOOLS.find((t) => t.name === "gate");
   assert.ok(tool !== undefined, "the gate tool is registered");
@@ -293,10 +291,10 @@ test("http_mirror_validates_its_output", async () => {
   assert.equal((await mirror("/gate", body)).status, 200, "restored");
 });
 
-// Q-C5 condition 2 (decision of block C), with the cut of C2 (Q-3a-5, lot CM-3c-4a): every 400 body of the mirror validates the
-// root of schemas/tool-error.schema.json (invalid_json and invalid_input carry their message and code), every 500 body its
-// $defs/InternalError, and the 404 and 405 bodies do not validate the root.
-// killer: apps/harness/src/http.ts:97 CONST "code: \"input_invalid\", " -> ""
+// Every 400 body of the mirror validates the root of schemas/tool-error.schema.json (invalid_json and invalid_input
+// carry their message and code), every 500 body its $defs/InternalError, and the 404 and 405 bodies do not validate the
+// root.
+// killer: apps/harness/src/http.ts:99 CONST "code: \"input_invalid\", " -> ""
 test("http_400_bodies_validate_the_tool_error_root", async () => {
   const schema = JSON.parse(readFileSync(fileURLToPath(new URL("../../../schemas/tool-error.schema.json", import.meta.url)), "utf8")) as Obj;
   const Ajv = (createRequire(import.meta.url)("ajv/dist/2020.js") as { default: new (o: object) => { compile: (s: unknown) => (v: unknown) => boolean } }).default;
@@ -309,6 +307,7 @@ test("http_400_bodies_validate_the_tool_error_root", async () => {
   const bad: [string, Promise<{ status: number; json: Obj }>, string][] = [
     ["not JSON", raw("POST", "/gate", "{"), "json_invalid"], ["extra key", raw("POST", "/gate", JSON.stringify({ ...gate, rogue: 1 })), "input_invalid"],
     ["missing params", raw("POST", "/calibrate", JSON.stringify({ scores: [1] })), "input_invalid"],
+    ["more faults than named", raw("POST", "/calibrate", JSON.stringify({ scores: new Array<unknown>(101).fill({}), alpha: 0.1, nMin: 5 })), "input_invalid"],
     ["unknown class", raw("POST", "/gate", JSON.stringify({ ...gate, prediction: pred("nope-class", 1) })), "task_class_unknown"],
     ["calibrate alpha", raw("POST", "/calibrate", JSON.stringify({ scores: [0.1, 0.2, 0.3], alpha: 1.5, nMin: 3 })), "calibrate_input_invalid"],
   ];
@@ -334,10 +333,10 @@ test("http_400_bodies_validate_the_tool_error_root", async () => {
   }
 });
 
-// C-11 condition 2 (decision CM-4b; cut Q-3b-5 to C'): the form of features_digest is the input schema's, served: a digest of
-// 63 hex characters is a 400 input_invalid on the HTTP mirror, and an MCP tool error without a code (the SDK refuses it
-// before the tool runs, so no _meta code rides).
-// killer: apps/harness/src/http.ts:97 CONST "\"input_invalid\"" -> "\"json_invalid\""
+// The form of features_digest is the input schema's, served: a digest of 63 hex characters is a 400 input_invalid on
+// the HTTP mirror, and an MCP tool error without a code (the SDK refuses it before the tool runs, so no _meta code
+// rides).
+// killer: apps/harness/src/http.ts:99 CONST "\"input_invalid\"" -> "\"json_invalid\""
 test("features_digest_of_63_chars_is_input_invalid", async () => {
   const body = { prediction: { ...pred("stable-run-velocity-24h", 0.0001, USDE_STABLE_RUN_PREDICTOR_ID), features_digest: "a".repeat(63) }, params: { ...PARAMS, intent: 0 } };
   const http = await mirror("/gate", body);
@@ -350,7 +349,83 @@ test("features_digest_of_63_chars_is_input_invalid", async () => {
   assert.match(JSON.stringify(mcp["content"]), /features_digest/, "naming the field");
 });
 
-/** C-3 condition 2 (block D, lot D-3, docs/G0-bloc-d-3.md Q-D3-1): the listed codes no served request can throw, exact, each
+// The validator reports every fault of a body, and the refusal grew with them on both surfaces: a body of 498 KB answered
+// 8.8 MB on calibration.scores and 64 MB on suivi.evaluations (measured 2026-11-06). A long false list, in any tool, now
+// answers 100 errors and the count of the others, in the same refusal, the MCP text carrying what the mirror's issue says.
+// killer: apps/harness/src/schema-projection.ts:393 CONST "omitted > 0" -> "false"
+test("long_false_list_refusal_is_bounded_on_both_surfaces", async () => {
+  const MAX_BYTES = 16 * 1024;
+  const n = 165_000; // an element of `{},` or `"",` takes 3 bytes: a body of 495 KB, under the 512 KiB the listener reads
+  const objects = new Array<unknown>(n).fill({}), strings = new Array<unknown>(n).fill("");
+  const prediction = pred("byo-x", 1);
+  const judge = { prediction, params: PARAMS, order: { kind: "OPEN", target: "venue:a", asset: "btc", amount: "100" } };
+  // [where, tool, arguments, faults]: each element's, plus the overlong list's own and the keys left out next to it.
+  const cases: [string, string, Obj, number][] = [
+    ["calibration.scores", "gate", { prediction, params: { ...PARAMS, calibration: { scores: objects, mode: "interval" } } }, n + 1],
+    ["calibrate scores, two keys left out", "calibrate", { scores: objects }, n + 1 + 2],
+    ["suivi.evaluations", "gate", { prediction, params: { ...PARAMS, suivi: { evaluations: objects } } }, 5 * n + 1 + 3],
+    ["limits.venues", "judge", { ...judge, limits: { venues: strings, assets: [] } }, n + 2],
+  ];
+  for (const [where, tool, args, faults] of cases) {
+    const http = await mirror(`/${tool}`, args);
+    const mcp = await mcpToolsCall(tool, args);
+    const bytes = Buffer.byteLength(http.text), mcpBytes = Buffer.byteLength(JSON.stringify(mcp));
+    assert.ok(bytes < MAX_BYTES && mcpBytes < MAX_BYTES, `${where}: the mirror answers ${String(bytes)} bytes, MCP ${String(mcpBytes)}`);
+    const json = JSON.parse(http.text) as Obj;
+    assert.deepEqual(Object.keys(json), ["error", "operation", "message", "code", "issues"], `${where}: the form of the refusal`);
+    assert.deepEqual([http.status, json["error"], json["code"]], [400, "invalid_input", "input_invalid"], where);
+    const issues = json["issues"] as { message: string }[];
+    assert.equal(issues.length, 1, `${where}: one issue, as before`);
+    const message = issues[0]?.message ?? "";
+    assert.ok(message.endsWith(`, and ${String(faults - 100)} more omitted`), `${where}: the count of the others, in: ${message.slice(-80)}`);
+    assert.equal(message.split(", data").length, 100, `${where}: 100 errors named`);
+    assert.deepEqual(mcp, { content: [{ type: "text", text: `Input validation error: Invalid arguments for tool ${tool}: ${message}` }], isError: true }, `${where}: the MCP text is the same refusal`);
+  }
+});
+
+// The cap, at its edge, on the exact bytes of both surfaces: a refusal of up to 100 errors is what it always was, and the 101st
+// is counted, not named.
+// killer: apps/harness/src/schema-projection.ts:385 CONST "MAX_INPUT_ERRORS = 100" -> "MAX_INPUT_ERRORS = 101"
+test("input_refusal_names_at_most_100_errors", async () => {
+  const named = (k: number): string => Array.from({ length: k }, (_, i) => `data/scores/${String(i)} must be number`).join(", ");
+  const cases: [number, string][] = [
+    [1, "data/scores/0 must be number"],
+    [100, named(100)],
+    [101, `${named(100)}, and 1 more omitted`],
+  ];
+  for (const [faults, message] of cases) {
+    const args = { scores: new Array<unknown>(faults).fill({}), alpha: 0.1, nMin: 5 };
+    const http = await mirror("/calibrate", args);
+    assert.equal(http.status, 400, `${String(faults)} faults: 400`);
+    assert.equal(http.text, JSON.stringify({ error: "invalid_input", operation: "calibrate", message: "the body of POST /calibrate does not match its input schema", code: "input_invalid", issues: [{ message }] }), `${String(faults)} faults: the exact body`);
+    assert.deepEqual(await mcpToolsCall("calibrate", args), { content: [{ type: "text", text: `Input validation error: Invalid arguments for tool calibrate: ${message}` }], isError: true }, `${String(faults)} faults: the exact MCP result`);
+  }
+});
+
+/** A value of `schema` with every leaf of the wrong type and one element per list. */
+function everyLeafWrong(schema: Obj): unknown {
+  const properties = schema["properties"] as Record<string, Obj> | undefined;
+  if (properties !== undefined) return Object.fromEntries(Object.entries(properties).map(([k, s]) => [k, everyLeafWrong(s)]));
+  return schema["type"] === "array" ? [everyLeafWrong((schema["items"] ?? {}) as Obj)] : {};
+}
+
+// The cap cuts long lists, never a body of a fixed shape: with every field of an input schema wrong and no long list, each tool
+// still names all its errors. So a caller fixing a malformed envelope sees it whole, in one answer.
+// killer: apps/harness/src/schema-projection.ts:385 CONST "MAX_INPUT_ERRORS = 100" -> "MAX_INPUT_ERRORS = 50"
+test("body_with_no_long_list_is_named_in_full", async () => {
+  let most = 0;
+  for (const tool of HARNESS_TOOLS) {
+    // attest takes no input (its schema has no property): it has no field to get wrong, so it answers its witness.
+    if (Object.keys((tool.inputSchemaJson as Obj)["properties"] ?? {}).length === 0) continue;
+    const http = await mirror(`/${tool.name}`, everyLeafWrong(tool.inputSchemaJson as Obj));
+    assert.equal(http.status, 400, `${tool.name}: refused`);
+    assert.doesNotMatch(http.text, /omitted/, `${tool.name}: nothing omitted`);
+    most = Math.max(most, http.text.split(", data").length);
+  }
+  assert.ok(most > 50, `the widest body names ${String(most)} errors: the bodies are wrong field by field, or this proves nothing`);
+});
+
+/** The listed codes no served request can throw, exact, each
  *  with its reason. Every other listed code has its served request below. */
 const NO_SERVED_REQUEST: Readonly<Record<string, string>> = {
   output_invalid: "a 500 of the mirror on an output outside its schema, never the answer to a request (http_mirror_validates_its_output)",
@@ -358,10 +433,10 @@ const NO_SERVED_REQUEST: Readonly<Record<string, string>> = {
   ukemi_predict_input_invalid: "the ukemi-predict tool is not registered (U-5b)",
 };
 
-// Test T-15 (block D, lot D-3; C-3 condition 2, the dynamic ratchet): each listed code but NO_SERVED_REQUEST is answered by a
-// served request, a 400 with that code over HTTP (in process), and the code in the MCP _meta for a code a tool throws (the SDK
-// answers input_invalid and json_invalid itself, without a code). A code listed without a request reddens. Green at the base
-// of D-3, since D-2 serves the six kata codes (declared; killer fired by hand).
+// Test T-15 (the dynamic ratchet): each listed code but NO_SERVED_REQUEST is answered by a served request, a 400 with
+// that code over HTTP (in process), and the code in the MCP _meta for a code a tool throws (the SDK answers
+// input_invalid and json_invalid itself, without a code). A code listed without a request reddens. Green at the base,
+// since the kata path serves the six kata codes (declared; killer fired by hand).
 // killer: apps/harness/src/kata-path.ts:59 CONST "\"kata_yhat_domain\"" -> "\"param_invalid\""
 test("every_code_but_output_invalid_is_thrown_by_a_served_request", async () => {
   const T = Date.parse("2026-10-04T04:00:00Z");
@@ -409,9 +484,8 @@ test("every_code_but_output_invalid_is_thrown_by_a_served_request", async () => 
   }
 });
 
-// G2 N-1 of D-3: the reasons of NO_SERVED_REQUEST are facts the test checks, so an exemption reddens when its reason falls (at
-// U-5b, ukemi-predict is registered and its code needs a served request in T-15). Green at its base (declared; killer by hand).
-// killer: apps/harness/src/schema-projection.ts:329 CONST "additionalProperties: false" -> "additionalProperties: true"
+// The reasons of NO_SERVED_REQUEST are facts the test checks, so an exemption reddens when its reason falls: a tool
+// registered again under one of these names needs a served request for its code in T-15.
 test("no_served_request_reasons_hold", () => {
   assert.ok(!REGISTERED_TOOL_NAMES.includes("ukemi-predict"), "ukemi-predict is not registered");
   assert.deepEqual([ATTEST_INPUT_SCHEMA["properties"], ATTEST_INPUT_SCHEMA["additionalProperties"]], [{}, false], "attest takes no input");
